@@ -677,6 +677,17 @@ enforceThaiInput($('#callerName'));
 enforceThaiInput($('#participants'), ',');
 enforceThaiInput($('#mCallerName'));
 
+// ===== จำชื่อ/อีเมลผู้ขอนัดไว้ในเบราว์เซอร์ ไม่ต้องพิมพ์ซ้ำทุกครั้งที่เข้ามาใหม่ =====
+const REMEMBER_KEYS = { callerName: 'execScheduler_callerName', callerEmail: 'execScheduler_callerEmail' };
+Object.keys(REMEMBER_KEYS).forEach(id => {
+  const el = $('#' + id);
+  const saved = localStorage.getItem(REMEMBER_KEYS[id]);
+  if (saved) el.value = saved;
+  el.addEventListener('input', () => {
+    localStorage.setItem(REMEMBER_KEYS[id], el.value);
+  });
+});
+
 // ===== จัดการนัดหมายเดิม (ยกเลิก / เลื่อนนัด) =====
 const bookingCard = $('#bookingCard'), manageCard = $('#manageCard');
 
