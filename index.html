@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://regionalteam.bifrostconnect.co.th; object-src 'none'; base-uri 'self'; form-action 'none'">
 <title>นัดหมายผู้บริหาร</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -752,7 +753,7 @@ function renderMeetings(matches, identity) {
     .sort((a, b) => (a.start || '').localeCompare(b.start || ''))
     .forEach(ev => {
       const dateIso = (ev.start || '').slice(0, 10);
-      const timeStr = (ev.start || '').length >= 16 ? `${(ev.start || '').slice(11, 16)} - ${(ev.end || '').slice(11, 16)} น.` : '';
+      const timeStr = (ev.start || '').length >= 16 ? `${escapeHtml((ev.start || '').slice(11, 16))} - ${escapeHtml((ev.end || '').slice(11, 16))} น.` : '';
       const row = document.createElement('div');
       row.className = 'meeting-row';
       row.innerHTML = `
@@ -1016,7 +1017,7 @@ $('#btnConfirm').addEventListener('click', async () => {
       <div><b>หัวข้อ:</b> ${escapeHtml(payload.topic)}</div>
       <div><b>ผู้บริหาร:</b> ${execLabel(execArray())}</div>
       <div><b>วันที่:</b> ${formatDateTH(state.date)}</div>
-      <div><b>เวลา:</b> ${state.selectedSlot.start} - ${state.selectedSlot.end} น.</div>
+      <div><b>เวลา:</b> ${escapeHtml(state.selectedSlot.start)} - ${escapeHtml(state.selectedSlot.end)} น.</div>
       <div style="margin-top:8px;color:var(--muted);font-size:13px;">${payload.requesterEmail ? `ระบบส่งคำเชิญยืนยันไปที่ ${escapeHtml(payload.requesterEmail)} แล้ว เช็คอีเมลเพื่อกดตอบรับ` : 'เพิ่มนัดหมายลงปฏิทินเรียบร้อยแล้ว (ไม่ได้ระบุอีเมล จึงไม่มีการส่งคำเชิญ)'}</div>
       ${state.reschedule && !oldCancelWarning ? `<div style="margin-top:4px;color:var(--muted);font-size:13px;">นัดหมายเดิม (${escapeHtml(state.reschedule.summary)}) ถูกยกเลิกให้เรียบร้อยแล้ว</div>` : ''}
       ${oldCancelWarning ? `<div style="margin-top:8px;color:var(--red);font-size:13px;">${oldCancelWarning}</div>` : ''}
