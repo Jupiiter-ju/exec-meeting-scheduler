@@ -807,19 +807,35 @@ function renderMeetings(matches, identity) {
     });
 }
 
+// ดึงหัวข้อ/ผู้เข้าร่วม/บริษัทแยกเป็นฟิลด์เดิมจาก description ของนัดหมายเก่า (บรรทัด "หัวข้อ: ...", "ผู้เข้าร่วม: ...", "บริษัท/โปรเจค: ...")
+// กันผู้ใช้ต้องพิมพ์ข้อมูลที่มีอยู่แล้วซ้ำตอนเลื่อนนัด
+function parseEventDescription(desc) {
+  desc = desc || '';
+  const topicMatch = desc.match(/หัวข้อ:\s*(.+)/);
+  const participantsMatch = desc.match(/ผู้เข้าร่วม:\s*(.+)/);
+  const companyMatch = desc.match(/บริษัท\/โปรเจค:\s*(.+)/);
+  return {
+    topic: topicMatch ? topicMatch[1].trim() : '',
+    participants: participantsMatch ? participantsMatch[1].trim() : '',
+    company: companyMatch ? companyMatch[1].trim() : ''
+  };
+}
+
 function startReschedule(ev, dateIso, identity) {
   state.reschedule = { date: dateIso, summary: ev.summary || '', callerName: identity.callerName, callerEmail: identity.callerEmail };
   showBookingCard();
   showStep(1);
   hideResults();
 
+  const parsed = parseEventDescription(ev.description);
+
   $('#callerName').value = identity.callerName;
   $('#callerName').readOnly = true;
   $('#callerEmail').value = identity.callerEmail;
   $('#callerEmail').readOnly = true;
-  $('#topic').value = ev.summary || '';
-  $('#participants').value = '';
-  $('#company').value = '';
+  $('#topic').value = parsed.topic || ev.summary || '';
+  $('#participants').value = parsed.participants;
+  $('#company').value = parsed.company;
   document.querySelectorAll('.exec-chip').forEach(c => c.classList.remove('selected'));
   state.executives = null;
   resetCalendar();
