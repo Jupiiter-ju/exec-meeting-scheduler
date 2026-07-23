@@ -652,6 +652,9 @@ async function callWebhook(payload) {
   if (!res.ok && !(data && data.success === false)) {
     throw new Error((data && (data.error || data.message)) || 'เกิดข้อผิดพลาดในการเชื่อมต่อระบบ');
   }
+  if (!data) {
+    throw new Error('เกิดข้อผิดพลาดในระบบ กรุณาลองใหม่อีกครั้ง หรือติดต่อเจ้าหน้าที่');
+  }
   return data;
 }
 
