@@ -1001,6 +1001,7 @@ $('#btnConfirm').addEventListener('click', async () => {
 
   const payload = {
     action: 'book',
+    source: 'website',
     date: state.date,
     start: state.selectedSlot.start,
     executives: execArray(),
