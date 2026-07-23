@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup 7 — Falling Light Strands</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --charcoal: #2B1F26;
+    --dark-gray: #6B5560;
+    --gray-warm: #A9838F;
+    --card-bg: #FFFFFF;
+    --border: #F1D3DC;
+    --pink-deep: #D97C93;
+    --pink-deep-2: #C96880;
+    --muted: #A9838F;
+    --green: #5C7A5C;
+    --red: #A6423A;
+    --gradient-pink: linear-gradient(135deg, #F3B9C8 0%, #E28FA5 50%, #D97C93 100%);
+  }
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: 'Prompt', 'Segoe UI', 'Sarabun', system-ui, sans-serif;
+    color: var(--charcoal);
+    padding: 24px 16px 60px;
+    min-height: 100vh;
+    position: relative;
+    /* ===== solid soft-pink base, matching the reference photo ===== */
+    background: radial-gradient(140% 100% at 50% 12%, #F7D9E0 0%, #F1BECB 45%, #E7A6B9 100%);
+  }
+
+  /* ===== ambient twinkle dots — independent gentle glimmer, no motion ===== */
+  .twinkle-layer {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-repeat: repeat;
+    background-size: 260px 260px;
+    background-image:
+      radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3.5px),
+      radial-gradient(circle, rgba(255,255,255,.7)  0 1.2px, transparent 2.4px),
+      radial-gradient(circle, rgba(255,255,255,.85) 0 1.6px, transparent 3px),
+      radial-gradient(circle, rgba(255,255,255,.6)  0 1px, transparent 2px);
+    background-position: 20% 15%, 70% 55%, 40% 80%, 85% 20%;
+    animation: twinkle 5s ease-in-out infinite;
+  }
+  .twinkle-layer.b {
+    background-size: 190px 190px;
+    background-position: 10% 60%, 55% 10%, 85% 75%, 30% 35%;
+    animation: twinkle 4s ease-in-out infinite 1.4s;
+    opacity: .8;
+  }
+  @keyframes twinkle { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+
+  /* ===== falling light strands — seamless continuous downward drift =====
+     Achieved with a repeating SVG pattern whose own `patternTransform` is
+     animated by exactly one tile-height per loop, so the fall never jumps. */
+  .strands-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .twinkle-layer { animation: none; }
+  }
+  /* ===== end mockup background ===== */
+
+  .mockup-badge {
+    position: fixed; top: 14px; right: 14px; z-index: 5;
+    background: rgba(43,31,38,.75); color: #fff; font-size: 12px; font-weight: 500;
+    padding: 6px 12px; border-radius: 999px; letter-spacing: .2px;
+  }
+
+  .wrap { max-width: 640px; margin: 0 auto; position: relative; z-index: 1; }
+  h1 {
+    font-size: 25px; font-weight: 700; margin: 0 0 4px; letter-spacing: .3px;
+    background: var(--gradient-pink);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .sub { color: var(--gray-warm); font-size: 14px; margin-bottom: 24px; font-weight: 300; }
+  .card {
+    position: relative;
+    overflow: hidden;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px 20px 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 14px 34px -18px rgba(180,70,100,.30), 0 1px 2px rgba(0,0,0,.03);
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: var(--gradient-pink);
+  }
+  .step-title { font-weight: 600; font-size: 15px; margin-bottom: 14px; color: var(--charcoal); letter-spacing: .2px; }
+  label { display: block; font-size: 13px; font-weight: 500; margin: 12px 0 6px; color: var(--dark-gray); }
+  label:first-child { margin-top: 0; }
+  input[type=text], input[type=date], textarea, select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #FFFBFB;
+    color: var(--charcoal);
+  }
+  input[type=text]:focus, input[type=date]:focus, textarea:focus, select:focus {
+    outline: none; border-color: var(--pink-deep);
+    box-shadow: 0 0 0 3px rgba(217,124,147,.20);
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  .exec-options { display: flex; gap: 10px; flex-wrap: wrap; }
+  .exec-chip {
+    flex: 1; min-width: 120px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 12px; text-align: center; cursor: pointer;
+    font-size: 14px; font-weight: 500; color: var(--dark-gray); background: #FFFBFB;
+    user-select: none; transition: .2s;
+  }
+  .exec-chip.selected {
+    border-color: transparent; background: var(--gradient-pink); color: #fff;
+    font-weight: 600; box-shadow: 0 8px 18px -8px rgba(201,104,128,.55);
+  }
+  button {
+    background: var(--gradient-pink); color: #fff; border: none;
+    padding: 12px 20px; border-radius: 12px; font-size: 15px; font-family: inherit;
+    font-weight: 600; letter-spacing: .2px; cursor: pointer; width: 100%; margin-top: 16px;
+    box-shadow: 0 10px 22px -10px rgba(201,104,128,.6);
+    transition: transform .15s, box-shadow .15s, opacity .15s;
+  }
+  button:hover { transform: translateY(-1px); box-shadow: 0 14px 26px -10px rgba(201,104,128,.65); }
+  button.secondary {
+    background: #fff; color: var(--pink-deep-2);
+    border: 1.5px solid var(--pink-deep); box-shadow: none;
+  }
+  button.secondary:hover { background: #FCEEF1; transform: none; box-shadow: none; }
+</style>
+</head>
+<body>
+
+<div class="twinkle-layer"></div>
+<div class="twinkle-layer b"></div>
+
+<svg class="strands-bg" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs>
+    <radialGradient id="beadGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"  stop-color="#FFFFFF" stop-opacity="1"/>
+      <stop offset="55%" stop-color="#FFFFFF" stop-opacity=".5"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blurSoft" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="1.2"/>
+    </filter>
+
+    <pattern id="strandsTile" width="300" height="400" patternUnits="userSpaceOnUse">
+      <animateTransform attributeName="patternTransform" type="translate" from="0 0" to="0 400" dur="50s" repeatCount="indefinite"/>
+
+      <!-- strand lines -->
+      <line x1="28"  y1="0" x2="28"  y2="400" stroke="#FFFFFF" stroke-opacity=".35" stroke-width="1"/>
+      <line x1="85"  y1="0" x2="85"  y2="400" stroke="#FFFFFF" stroke-opacity=".3"  stroke-width="1"/>
+      <line x1="150" y1="0" x2="150" y2="400" stroke="#FFFFFF" stroke-opacity=".38" stroke-width="1"/>
+      <line x1="215" y1="0" x2="215" y2="400" stroke="#FFFFFF" stroke-opacity=".3"  stroke-width="1"/>
+      <line x1="272" y1="0" x2="272" y2="400" stroke="#FFFFFF" stroke-opacity=".33" stroke-width="1"/>
+
+      <!-- strand 1 beads (x=28) -->
+      <circle cx="28" cy="35"  r="2.5" fill="#FFFFFF" opacity=".8"/>
+      <circle cx="28" cy="95"  r="5.5" fill="#FFFFFF" opacity=".85" filter="url(#blurSoft)"/>
+      <circle cx="28" cy="150" r="2"   fill="#FFFFFF" opacity=".7"/>
+      <circle cx="28" cy="225" r="17"  fill="url(#beadGlow)"/>
+      <circle cx="28" cy="225" r="8"   fill="#FFFFFF"/>
+      <g stroke="#FFFFFF" stroke-width="1.4" opacity=".9" filter="url(#blurSoft)">
+        <line x1="28" y1="211" x2="28" y2="239"/>
+        <line x1="14" y1="225" x2="42" y2="225"/>
+      </g>
+      <circle cx="28" cy="300" r="3"   fill="#FFFFFF" opacity=".75"/>
+      <circle cx="28" cy="365" r="2.5" fill="#FFFFFF" opacity=".7"/>
+
+      <!-- strand 2 beads (x=85) -->
+      <circle cx="85" cy="20"  r="2"   fill="#FFFFFF" opacity=".7"/>
+      <circle cx="85" cy="80"  r="3"   fill="#FFFFFF" opacity=".75"/>
+      <circle cx="85" cy="140" r="12"  fill="url(#beadGlow)"/>
+      <circle cx="85" cy="140" r="6"   fill="#FFFFFF"/>
+      <circle cx="85" cy="230" r="2.5" fill="#FFFFFF" opacity=".7"/>
+      <circle cx="85" cy="290" r="4"   fill="#FFFFFF" opacity=".8" filter="url(#blurSoft)"/>
+      <circle cx="85" cy="350" r="2"   fill="#FFFFFF" opacity=".65"/>
+
+      <!-- strand 3 beads (x=150) -->
+      <circle cx="150" cy="50"  r="3"  fill="#FFFFFF" opacity=".78"/>
+      <circle cx="150" cy="110" r="2"  fill="#FFFFFF" opacity=".65"/>
+      <circle cx="150" cy="180" r="19" fill="url(#beadGlow)"/>
+      <circle cx="150" cy="180" r="9"  fill="#FFFFFF"/>
+      <g stroke="#FFFFFF" stroke-width="1.5" opacity=".9" filter="url(#blurSoft)">
+        <line x1="150" y1="164" x2="150" y2="196"/>
+        <line x1="134" y1="180" x2="166" y2="180"/>
+      </g>
+      <circle cx="150" cy="260" r="2.5" fill="#FFFFFF" opacity=".7"/>
+      <circle cx="150" cy="330" r="5"   fill="#FFFFFF" opacity=".8" filter="url(#blurSoft)"/>
+      <circle cx="150" cy="385" r="2"   fill="#FFFFFF" opacity=".65"/>
+
+      <!-- strand 4 beads (x=215) -->
+      <circle cx="215" cy="10"  r="2"   fill="#FFFFFF" opacity=".65"/>
+      <circle cx="215" cy="70"  r="4"   fill="#FFFFFF" opacity=".78" filter="url(#blurSoft)"/>
+      <circle cx="215" cy="160" r="2.5" fill="#FFFFFF" opacity=".7"/>
+      <circle cx="215" cy="220" r="13"  fill="url(#beadGlow)"/>
+      <circle cx="215" cy="220" r="6.5" fill="#FFFFFF"/>
+      <circle cx="215" cy="300" r="3"   fill="#FFFFFF" opacity=".75"/>
+      <circle cx="215" cy="360" r="2"   fill="#FFFFFF" opacity=".65"/>
+
+      <!-- strand 5 beads (x=272) -->
+      <circle cx="272" cy="45"  r="2.5" fill="#FFFFFF" opacity=".75"/>
+      <circle cx="272" cy="120" r="3"   fill="#FFFFFF" opacity=".78"/>
+      <circle cx="272" cy="190" r="2"   fill="#FFFFFF" opacity=".65"/>
+      <circle cx="272" cy="250" r="18"  fill="url(#beadGlow)"/>
+      <circle cx="272" cy="250" r="8.5" fill="#FFFFFF"/>
+      <g stroke="#FFFFFF" stroke-width="1.4" opacity=".9" filter="url(#blurSoft)">
+        <line x1="272" y1="236" x2="272" y2="264"/>
+        <line x1="258" y1="250" x2="286" y2="250"/>
+      </g>
+      <circle cx="272" cy="330" r="2.5" fill="#FFFFFF" opacity=".7"/>
+    </pattern>
+  </defs>
+
+  <rect x="0" y="0" width="300" height="400" fill="url(#strandsTile)"/>
+</svg>
+
+<div class="mockup-badge">Mockup 7 · Falling Light Strands</div>
+<div class="wrap">
+  <h1>ระบบนัดหมายผู้บริหาร</h1>
+  <div class="sub">จันทร์–ศุกร์ เวลา 13:00–16:00 น. (นัดละ 30 นาที)</div>
+
+  <div class="card">
+    <div class="step-title">1. รายละเอียดการนัดหมาย</div>
+    <label>ชื่อผู้ขอนัด *</label>
+    <input type="text" placeholder="เช่น คุณสมชาย">
+    <label>อีเมลผู้ขอนัด *</label>
+    <input type="text" placeholder="เช่น somchai@company.com">
+    <label>หัวข้อประชุม *</label>
+    <input type="text" placeholder="เช่น หารือแผนงานไตรมาส 3">
+    <label>ผู้บริหารที่ต้องการนัด *</label>
+    <div class="exec-options">
+      <div class="exec-chip selected">คุณกฤช</div>
+      <div class="exec-chip">คุณเบียร์</div>
+      <div class="exec-chip">ทั้งคู่</div>
+    </div>
+    <label>วันที่ต้องการนัด *</label>
+    <input type="date">
+    <button>ค้นหาเวลาว่าง</button>
+    <button class="secondary">← กลับไปแก้ไขข้อมูล</button>
+  </div>
+</div>
+</body>
+</html>

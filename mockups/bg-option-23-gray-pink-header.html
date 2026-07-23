@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup 23 — Gray Slant + Pink Header</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #2A2A2A; --slate: #616161; --slate-light: #9E9E9E;
+    --card-bg: #FFFFFF; --border: #E4E4E4;
+    --gray-900: #424242; --gray-800: #616161; --gray-600: #757575;
+    --gray-400: #9E9E9E; --gray-300: #BDBDBD;
+    --pink-1: #FAB0BD; --pink-2: #F7A0B8; --pink-3: #EE6983; --pink-4: #FB6F92;
+    --gradient-header: linear-gradient(100deg, #FB6F92 0%, #EE6983 55%, #F7A0B8 100%);
+    --gradient-accent: linear-gradient(135deg, #FB6F92 0%, #EE6983 62%, #F5A99A 100%);
+    --gradient-metal: linear-gradient(135deg, #424242 0%, #757575 50%, #BDBDBD 100%);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: 'Prompt', 'Segoe UI', 'Sarabun', system-ui, sans-serif;
+    color: var(--ink); min-height: 100vh; position: relative;
+  }
+  /* pure gray diagonal — Material gray scale 50 -> 700, pinned to the
+     viewport so it never has to stretch across the page's full scrollable
+     height (avoids banding) */
+  .page-bg {
+    position: fixed; inset: 0; z-index: -1;
+    background: linear-gradient(150deg,
+      #FAFAFA 0%,
+      #F5F5F5 14%,
+      #EEEEEE 28%,
+      #E0E0E0 42%,
+      #BDBDBD 58%,
+      #9E9E9E 72%,
+      #757575 86%,
+      #616161 100%);
+  }
+
+  .mockup-badge {
+    position: fixed; top: 14px; right: 14px; z-index: 5;
+    background: rgba(42,42,42,.82); color: #fff; font-size: 12px; font-weight: 500;
+    padding: 6px 12px; border-radius: 999px; letter-spacing: .2px;
+  }
+
+  /* ===== header zone — dark-gray wash feathered to fully transparent, so
+     it reads as a bar without a hard edge; it fades out into the same
+     gray tones the page-bg is already showing at that height ===== */
+  .header-glow {
+    position: fixed; top: 0; left: 0; right: 0; height: 280px; z-index: -1; pointer-events: none;
+    background: linear-gradient(180deg,
+      #2E2E2E 0%,
+      #424242 32%,
+      #616161 58%,
+      rgba(117,117,117,.55) 78%,
+      rgba(117,117,117,0) 100%);
+  }
+
+  .topbar {
+    padding: 26px 20px 34px;
+    text-align: center;
+  }
+  .topbar h1 {
+    color: #fff; font-size: 24px; font-weight: 800; margin: 0 0 6px; letter-spacing: .3px;
+  }
+  .topbar .sub { color: rgba(255,255,255,.9); font-size: 13.5px; font-weight: 300; }
+  .topbar .pills { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .pill {
+    background: rgba(255,255,255,.2); color: #fff; font-size: 12px; font-weight: 500;
+    padding: 5px 12px; border-radius: 999px;
+  }
+
+  .wrap { max-width: 640px; margin: -18px auto 0; padding: 0 16px 60px; position: relative; z-index: 1; }
+  .card {
+    position: relative; overflow: hidden; background: var(--card-bg);
+    border: 1px solid var(--border); border-radius: 18px; padding: 24px 20px 20px; margin-bottom: 16px;
+    box-shadow: 0 20px 44px -20px rgba(0,0,0,.45), 0 1px 2px rgba(0,0,0,.05);
+  }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--gradient-metal); }
+  .section { padding-top: 22px; margin-top: 22px; border-top: 1px solid var(--border); }
+  .section:first-child { padding-top: 0; margin-top: 0; border-top: none; }
+  .step-title { font-weight: 600; font-size: 15px; margin-bottom: 14px; color: var(--gray-900); }
+  label { display: block; font-size: 13px; font-weight: 500; margin: 12px 0 6px; color: var(--slate); }
+  label:first-child { margin-top: 0; }
+  input[type=text], input[type=date] {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px;
+    font-size: 14px; font-family: inherit; background: #FFFFFF; color: var(--ink);
+  }
+  input[type=text]:focus, input[type=date]:focus {
+    outline: none; border-color: var(--pink-3);
+    box-shadow: 0 0 0 3px rgba(238,105,131,.18);
+  }
+  .exec-options { display: flex; gap: 10px; flex-wrap: wrap; }
+  .exec-chip {
+    flex: 1; min-width: 120px; border: 1.5px solid var(--border); border-radius: 12px; padding: 12px;
+    text-align: center; font-size: 14px; font-weight: 500; color: var(--slate); background: #FFFFFF;
+  }
+  .exec-chip.selected {
+    border-color: transparent; background: var(--gradient-accent); color: #fff; font-weight: 600;
+    box-shadow: 0 8px 18px -8px rgba(238,105,131,.55);
+  }
+  button {
+    background: var(--gradient-accent); color: #fff; border: none; padding: 12px 20px; border-radius: 12px;
+    font-size: 15px; font-family: inherit; font-weight: 600; width: 100%; margin-top: 16px;
+    box-shadow: 0 10px 22px -10px rgba(238,105,131,.55);
+  }
+  button.secondary {
+    background: #fff; color: var(--pink-3);
+    border: 1.5px solid var(--pink-2); box-shadow: none;
+  }
+  .slots-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+  .slot-btn {
+    padding: 12px 6px; border: 1.5px solid var(--border); border-radius: 12px;
+    text-align: center; font-size: 14px; font-weight: 500; background: #FFFFFF; color: var(--slate);
+  }
+  .slot-btn.selected {
+    border-color: transparent; background: var(--gradient-accent); color: #fff; font-weight: 700;
+    box-shadow: 0 8px 18px -8px rgba(238,105,131,.55);
+  }
+  .suggest-box {
+    margin-top: 14px; padding: 12px; background: #FCEAEE;
+    border: 1px solid var(--pink-2); border-radius: 12px; font-size: 14px;
+  }
+  .suggest-box b { color: var(--pink-3); }
+  .summary-list { font-size: 14px; line-height: 1.8; color: var(--slate); }
+  .summary-list b { color: var(--gray-900); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="page-bg"></div>
+<div class="header-glow"></div>
+<div class="mockup-badge">Mockup 23 · Gray Slant + Pink Header</div>
+
+<header class="topbar">
+  <h1>ระบบนัดหมายผู้บริหาร</h1>
+  <div class="sub">จันทร์–ศุกร์ เวลา 13:00–16:00 น. (นัดละ 30 นาที)</div>
+  <div class="pills">
+    <span class="pill">🕐 นัดล่วงหน้าออนไลน์</span>
+    <span class="pill">👥 เลือกผู้บริหารได้ 1–2 ท่าน</span>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="section">
+      <div class="step-title">1. รายละเอียดการนัดหมาย</div>
+      <label>ชื่อผู้ขอนัด *</label>
+      <input type="text" placeholder="เช่น คุณสมชาย">
+      <label>หัวข้อประชุม *</label>
+      <input type="text" placeholder="เช่น หารือแผนงานไตรมาส 3">
+      <label>ผู้บริหารที่ต้องการนัด *</label>
+      <div class="exec-options">
+        <div class="exec-chip selected">คุณกฤช</div>
+        <div class="exec-chip">คุณเบียร์</div>
+        <div class="exec-chip">ทั้งคู่</div>
+      </div>
+      <label>วันที่ต้องการนัด *</label>
+      <input type="date">
+      <button>ค้นหาเวลาว่าง</button>
+      <button class="secondary">← กลับไปแก้ไขข้อมูล</button>
+    </div>
+
+    <div class="section">
+      <div class="step-title">2. เลือกเวลาที่ว่าง</div>
+      <div class="slots-grid">
+        <div class="slot-btn">13:00-13:30</div>
+        <div class="slot-btn">13:30-14:00</div>
+        <div class="slot-btn selected">14:00-14:30</div>
+        <div class="slot-btn">14:30-15:00</div>
+        <div class="slot-btn">15:00-15:30</div>
+        <div class="slot-btn">15:30-16:00</div>
+      </div>
+      <div class="suggest-box"><b>วันที่ใกล้เคียงที่ว่าง:</b> วันพุธที่ 22 กรกฎาคม 2569</div>
+    </div>
+
+    <div class="section">
+      <div class="step-title">3. ยืนยันการนัดหมาย</div>
+      <div class="summary-list">
+        <div><b>ผู้บริหาร:</b> คุณกฤช</div>
+        <div><b>วันที่:</b> วันจันทร์ที่ 20 กรกฎาคม 2569</div>
+        <div><b>เวลา:</b> 14:00 - 14:30 น.</div>
+      </div>
+      <button>ยืนยันการนัดหมาย</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

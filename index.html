@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>นัดหมายผู้บริหาร</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --charcoal: #1C1E21;        /* headings, primary text */
+    --dark-gray: #575B60;       /* secondary text */
+    --gray-warm: #8A8E93;       /* muted text */
+    --card-bg: #FFFFFF;
+    --border: #DFE1E3;
+    --pink-gold: #FF97B7;       /* pink accent — borders/focus rings */
+    --pink-gold-deep: #D4497A;  /* pink text — bold emphasis (อ่านง่ายบนพื้นขาว) */
+    --champagne-gold: #FF97B7;
+    --champagne-gold-dark: #D4497A;
+    --champagne-tint: #FFEFF4;
+    --gradient-metal: linear-gradient(135deg, #595A55 0%, #6E6F6A 45%, #8A8B86 100%);
+    --gradient-pink: linear-gradient(135deg, #FF97B7 0%, #F7A0B8 100%);
+    --gradient-header: linear-gradient(135deg, #FF97B7 0%, #F7A0B8 100%);
+    --muted: #8A8E93;
+    --green: #5C7A5C;
+    --red: #A6423A;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Prompt', 'Segoe UI', 'Sarabun', system-ui, sans-serif;
+    color: var(--charcoal);
+    padding: 24px 16px 60px;
+    position: relative;
+  }
+  /* พื้นหลังเทาทั้งหน้า (#595A55) — ไล่เฉดเดียวกันอ่อน->เข้มเล็กน้อยตามแนวทแยง
+     ให้มีมิติ ไม่แบนทึบ; pinned to the viewport so the gradient never has to
+     stretch across the page's full scrollable height (avoids banding) */
+  .page-bg {
+    position: fixed; inset: 0; z-index: -1;
+    background: linear-gradient(150deg,
+      #6B6C67 0%,
+      #595A55 55%,
+      #4B4C48 100%);
+  }
+  .wrap { max-width: 640px; margin: 0 auto; position: relative; z-index: 1; }
+  h1 {
+    font-size: 25px; font-weight: 700; margin: 0 0 4px; letter-spacing: .3px;
+    background: var(--gradient-header);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .sub { color: rgba(255,255,255,.8); font-size: 14px; margin-bottom: 24px; font-weight: 300; }
+  /* no overflow:hidden — it would clip the floating calendar popup; the top
+     bar clips its own corners with a matching border-radius instead */
+  .card {
+    position: relative;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px 20px 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 18px 40px -18px rgba(20,22,24,.30), 0 1px 2px rgba(0,0,0,.05);
+  }
+  /* step 1 stays on screen while steps 2-3 expand below it in the same card,
+     so the expanding sections get a divider line to separate them */
+  #step2, #step3 { padding-top: 22px; margin-top: 22px; border-top: 1px solid var(--border); }
+  .step-title { font-weight: 600; font-size: 15px; margin-bottom: 14px; color: var(--charcoal); letter-spacing: .2px; }
+  label { display: block; font-size: 13px; font-weight: 500; margin: 12px 0 6px; color: var(--dark-gray); }
+  label:first-child { margin-top: 0; }
+  input[type=text], input[type=date], textarea, select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #FAFAFA;
+    color: var(--charcoal);
+  }
+  input[type=text]:focus, input[type=date]:focus, textarea:focus, select:focus {
+    outline: none; border-color: var(--pink-gold);
+    box-shadow: 0 0 0 3px rgba(255,151,183,.3);
+  }
+  textarea { resize: vertical; min-height: 0; height: 43px; }
+  .exec-options { display: flex; gap: 10px; flex-wrap: wrap; }
+  .exec-chip {
+    flex: 1;
+    min-width: 120px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--dark-gray);
+    background: #FAFAFA;
+    user-select: none;
+    transition: .2s;
+  }
+  .exec-chip.selected {
+    border-color: var(--pink-gold);
+    background: var(--champagne-tint);
+    color: var(--pink-gold-deep);
+    font-weight: 600;
+    box-shadow: 0 8px 18px -8px rgba(255,151,183,.4);
+  }
+  .row { display: flex; gap: 10px; }
+  .row > div { flex: 1; }
+  button {
+    background: var(--gradient-pink);
+    color: var(--pink-gold-deep);
+    border: none;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: inherit;
+    font-weight: 600;
+    letter-spacing: .2px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 16px;
+    box-shadow: 0 10px 22px -10px rgba(255,151,183,.45);
+    transition: transform .15s, box-shadow .15s, opacity .15s;
+  }
+  button:hover { transform: translateY(-1px); box-shadow: 0 14px 26px -10px rgba(255,151,183,.5); }
+  button:disabled { background: var(--border); color: var(--muted); box-shadow: none; transform: none; cursor: not-allowed; }
+  button.secondary {
+    background: #fff; color: var(--champagne-gold-dark);
+    border: 1.5px solid var(--champagne-gold); box-shadow: none;
+  }
+  button.secondary:hover { background: var(--champagne-tint); transform: none; box-shadow: none; }
+  .slots-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+  .slot-btn {
+    padding: 12px 6px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    background: #FAFAFA;
+    color: var(--dark-gray);
+    transition: .2s;
+  }
+  .slot-btn:hover { border-color: var(--pink-gold); }
+  .slot-btn.selected {
+    border-color: var(--pink-gold);
+    background: var(--champagne-tint);
+    color: var(--pink-gold-deep);
+    font-weight: 700;
+    box-shadow: 0 8px 18px -8px rgba(255,151,183,.4);
+  }
+  .empty-msg { color: var(--muted); font-size: 14px; padding: 10px 0; }
+  .suggest-box {
+    margin-top: 14px;
+    padding: 12px;
+    background: var(--champagne-tint);
+    border: 1px solid var(--pink-gold);
+    border-radius: 12px;
+    font-size: 14px;
+  }
+  .suggest-box b { color: var(--pink-gold-deep); }
+  .status { font-size: 13px; margin-top: 10px; }
+  .status.error { color: var(--red); }
+  .status.success { color: var(--green); }
+  .summary-list { font-size: 14px; line-height: 1.8; color: var(--dark-gray); }
+  .summary-list b { color: var(--pink-gold-deep); font-weight: 600; }
+  .confirm-card { text-align: center; padding: 32px 20px; }
+  .confirm-card .icon { font-size: 48px; margin-bottom: 8px; }
+
+  /* ===== custom calendar date picker ===== */
+  .date-field { position: relative; }
+  .date-display {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px;
+    font-size: 14px; font-family: inherit; background: #FAFAFA; color: var(--charcoal);
+    cursor: pointer; user-select: none;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .date-display::after { content: '📅'; font-size: 15px; line-height: 1; }
+  .date-display.placeholder { color: var(--muted); }
+  .date-display:hover { border-color: var(--pink-gold); }
+  /* popup ลอยทับเนื้อหา กางขึ้นด้านบนของช่องวันที่ (ช่องอยู่ท้ายฟอร์ม
+     ถ้ากางลงจะเลยขอบการ์ด/จอ) */
+  .cal-pop {
+    position: absolute; bottom: calc(100% + 8px); left: 0; z-index: 20;
+    padding: 12px 12px 12px; background: #fff;
+    border: 1px solid var(--border); border-radius: 14px;
+    box-shadow: 0 18px 40px -12px rgba(0,0,0,.3);
+    width: 264px;
+  }
+  .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .cal-title { font-weight: 600; font-size: 14px; color: var(--charcoal); }
+  .cal-nav {
+    width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--dark-gray); font-size: 16px; user-select: none;
+  }
+  .cal-nav:hover { background: var(--champagne-tint); color: var(--pink-gold-deep); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .cal-dow { text-align: center; font-size: 11px; font-weight: 600; color: var(--dark-gray); padding: 6px 0 4px; }
+  .cal-day {
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    font-size: 12.5px; border-radius: 50%; cursor: pointer; color: var(--charcoal);
+    border: 1.5px solid transparent; transition: background .15s;
+  }
+  .cal-day:hover { background: var(--champagne-tint); }
+  .cal-day.dim { color: #CFCFD2; pointer-events: none; }
+  .cal-day.today { border-color: var(--pink-gold); color: var(--pink-gold-deep); font-weight: 600; }
+  .cal-day.selected {
+    background: var(--gradient-pink); color: #fff; font-weight: 700; border-color: transparent;
+    box-shadow: 0 6px 14px -6px rgba(255,151,183,.55);
+  }
+  .cal-select-btn {
+    display: block; margin: 10px auto 0; width: auto; min-width: 110px;
+    padding: 8px 28px; border-radius: 999px; font-size: 14px;
+  }
+  .cal-select-btn:disabled { border-radius: 999px; }
+
+  .hidden { display: none !important; }
+  .spinner {
+    display: inline-block; width: 14px; height: 14px;
+    border: 2px solid rgba(122,66,55,.4); border-top-color: transparent;
+    border-radius: 50%; animation: spin .7s linear infinite; margin-left: 6px; vertical-align: -2px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ===== จัดการนัดหมายเดิม (ยกเลิก/เลื่อนนัด) — segmented control 2 ปุ่ม (อยู่ในการ์ดสีขาว) ===== */
+  .tab-bar {
+    display: grid; grid-template-columns: 1fr 1fr;
+    background: var(--champagne-tint);
+    border-radius: 14px;
+    padding: 0 5px;
+    gap: 4px;
+    margin-top: -10px;
+    margin-bottom: 20px;
+  }
+  .tab-btn {
+    font-family: inherit; font-size: 13.5px; font-weight: 600;
+    padding: 11px 14px; border-radius: 10px; cursor: pointer;
+    border: none; background: transparent; color: var(--dark-gray);
+    white-space: nowrap; margin: 0; width: auto;
+    transition: background .18s ease, color .18s ease, box-shadow .18s ease;
+  }
+  .tab-btn:hover:not(.active) { color: var(--pink-gold-deep); }
+  @media (max-width: 400px) {
+    .tab-btn { font-size: 11.5px; padding: 11px 6px; }
+  }
+  .tab-btn.active {
+    background: var(--gradient-pink);
+    color: #fff;
+    box-shadow: 0 8px 18px -8px rgba(212,73,122,.5);
+  }
+  input[readonly] { background: #EFEFEF !important; color: var(--dark-gray); cursor: not-allowed; }
+  .reschedule-banner {
+    background: var(--champagne-tint); border: 1px solid var(--pink-gold); border-radius: 12px;
+    padding: 10px 14px; font-size: 13px; margin-bottom: 16px; color: var(--charcoal);
+  }
+  .reschedule-banner .link {
+    text-decoration: underline; cursor: pointer; color: var(--pink-gold-deep); font-weight: 500;
+  }
+  .meeting-row {
+    border: 1.5px solid var(--border); border-radius: 12px; padding: 14px;
+    margin-bottom: 10px; background: #FAFAFA;
+  }
+  .meeting-date { font-weight: 600; font-size: 14px; color: var(--charcoal); }
+  .meeting-time { font-size: 13px; color: var(--pink-gold-deep); font-weight: 500; margin: 2px 0 6px; }
+  .meeting-summary { font-size: 13px; color: var(--dark-gray); margin-bottom: 10px; }
+  .meeting-actions.row button, .confirm-cancel .row button { margin-top: 0; }
+  .btn-danger { background: #fff; color: var(--red); border: 1.5px solid var(--red); box-shadow: none; }
+  .btn-danger:hover { background: #FBEBEA; transform: none; box-shadow: none; }
+  .btn-danger-solid { background: var(--red); color: #fff; }
+</style>
+</head>
+<body>
+<div class="page-bg"></div>
+<div class="wrap">
+  <h1>Executive Scheduling (คุณกฤช &amp; คุณเบียร์)</h1>
+  <div class="sub">จันทร์–ศุกร์ เวลา 13:00–16:00 น. (นัดละ 30 นาที)</div>
+  <div id="demoBanner" class="hidden" style="background:var(--champagne-tint);border:1px solid var(--pink-gold);color:var(--charcoal);border-radius:12px;padding:10px 14px;font-size:13px;margin-bottom:16px;">
+    ⚠️ โหมดตัวอย่าง — ยังไม่ได้เชื่อม n8n จริง ข้อมูลเวลาว่าง/การจองที่เห็นเป็นข้อมูลจำลองเพื่อทดสอบหน้าตาเท่านั้น
+  </div>
+
+  <!-- ===== การ์ดจัดการนัดหมายเดิม (ค้นหา / ยกเลิก / เลื่อนนัด) ===== -->
+  <div class="card hidden" id="manageCard">
+    <div class="tab-bar">
+      <button type="button" id="tabBookingBtn2" class="tab-btn" data-view="booking">นัดหมายผู้บริหาร</button>
+      <button type="button" id="tabManageBtn2" class="tab-btn active" data-view="manage">ยกเลิก / เลื่อนนัดหมาย</button>
+    </div>
+    <div class="section" id="mStep1">
+      <div class="step-title">ค้นหานัดหมายของคุณ</div>
+
+      <label>ชื่อผู้ขอนัด *</label>
+      <input type="text" id="mCallerName" placeholder="เช่น แพทตี้">
+
+      <label>อีเมลผู้ขอนัด (ถ้ามี)</label>
+      <input type="text" id="mCallerEmail" placeholder="เช่น somchai@company.com">
+
+      <label>วันที่นัด (ถ้าทราบ — ไม่ทราบก็ค้นหาได้ ระบบจะค้นล่วงหน้าให้ 30 วัน)</label>
+      <div class="date-field" id="mDateField">
+        <input type="hidden" id="mDateInput">
+        <div class="date-display placeholder" id="mDateDisplay">แตะเพื่อเลือกวันที่ (ถ้าไม่ทราบข้ามได้)</div>
+        <div class="cal-pop hidden" id="mCalPop">
+          <div class="cal-head">
+            <div class="cal-nav" id="mCalPrev">‹</div>
+            <div class="cal-title" id="mCalTitle"></div>
+            <div class="cal-nav" id="mCalNext">›</div>
+          </div>
+          <div class="cal-grid" id="mCalGrid"></div>
+          <button class="cal-select-btn" id="mCalSelect" disabled>เลือก</button>
+        </div>
+      </div>
+      <div style="text-align:right;margin-top:4px;">
+        <span class="link hidden" id="mClearDate" style="text-decoration:underline;cursor:pointer;color:var(--dark-gray);font-size:12px;">ล้างวันที่</span>
+      </div>
+
+      <button id="btnSearch">ค้นหานัดหมาย</button>
+      <div class="status" id="searchStatus"></div>
+    </div>
+
+    <div class="section hidden" id="mStep2">
+      <div class="step-title">นัดหมายที่พบ</div>
+      <div id="meetingsList"></div>
+      <button class="secondary" id="btnSearchAgain">ค้นหาใหม่</button>
+    </div>
+  </div>
+
+  <div class="card" id="bookingCard">
+    <div class="tab-bar">
+      <button type="button" id="tabBookingBtn" class="tab-btn active" data-view="booking">นัดหมายผู้บริหาร</button>
+      <button type="button" id="tabManageBtn" class="tab-btn" data-view="manage">ยกเลิก / เลื่อนนัดหมาย</button>
+    </div>
+    <div class="reschedule-banner hidden" id="rescheduleBanner">
+      🔄 กำลังเลื่อนนัดหมายเดิม: <b class="reschedule-old-info"></b><br>
+      กรอกรายละเอียดนัดใหม่ด้านล่าง แล้วกดยืนยัน ระบบจะยกเลิกนัดเดิมให้อัตโนมัติเมื่อจองนัดใหม่สำเร็จ
+      <div style="margin-top:6px;"><span class="link" id="cancelRescheduleLink">ยกเลิกการเลื่อนนัด กลับไปจองนัดใหม่ตามปกติ</span></div>
+    </div>
+    <!-- STEP 1: FORM -->
+    <div class="section" id="step1">
+      <div class="step-title">1. ข้อมูลการนัดหมาย</div>
+
+      <label>ชื่อผู้ขอนัด *</label>
+      <input type="text" id="callerName" placeholder="เช่น แพทตี้ (ภาษาไทยเท่านั้น)">
+
+      <label>อีเมลผู้ขอนัด (ถ้ามี)</label>
+      <input type="text" id="callerEmail" placeholder="เช่น somchai@company.com">
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">ถ้ากรอก ระบบจะส่งคำเชิญยืนยันนัดหมายผ่าน Google Calendar ให้ (เฉพาะผู้ขอนัด ไม่ส่งถึงผู้บริหาร) ถ้าไม่กรอก ระบบจะเพิ่มนัดหมายลงปฏิทินโดยไม่ส่งคำเชิญ</div>
+
+      <label>หัวข้อประชุม *</label>
+      <input type="text" id="topic" placeholder="เช่น Action Plan Q4">
+
+      <label>รายชื่อผู้เข้าร่วม</label>
+      <textarea id="participants" placeholder="เช่น สมชาย, สมหญิง, ปีเตอร์ (ภาษาไทยเท่านั้น)"></textarea>
+
+      <label>บริษัท / โปรเจค *</label>
+      <input type="text" id="company" placeholder="เช่น BIF, Bifrost, Action Plan, Project">
+
+      <label>ผู้บริหารที่ต้องการนัด *</label>
+      <div class="exec-options">
+        <div class="exec-chip" data-exec="exe">คุณกฤช</div>
+        <div class="exec-chip" data-exec="combo">คุณเบียร์</div>
+        <div class="exec-chip" data-exec="both">คุณกฤช &amp; คุณเบียร์</div>
+      </div>
+
+      <label>วันที่ต้องการนัด *</label>
+      <div class="date-field" id="dateField">
+        <input type="hidden" id="dateInput">
+        <div class="date-display placeholder" id="dateDisplay">แตะเพื่อเลือกวันที่</div>
+        <div class="cal-pop hidden" id="calPop">
+          <div class="cal-head">
+            <div class="cal-nav" id="calPrev">‹</div>
+            <div class="cal-title" id="calTitle"></div>
+            <div class="cal-nav" id="calNext">›</div>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+          <button class="cal-select-btn" id="calSelect" disabled>เลือก</button>
+        </div>
+      </div>
+
+      <button id="btnCheck">ค้นหาเวลาว่าง</button>
+      <div class="status" id="formStatus"></div>
+    </div>
+
+    <!-- STEP 2: SLOT PICKER -->
+    <div class="section hidden" id="step2">
+      <div class="step-title">2. เลือกเวลาที่ว่าง — <span id="slotDateLabel"></span></div>
+      <div id="slotsContainer"></div>
+      <div id="suggestContainer"></div>
+    </div>
+
+    <!-- STEP 3: CONFIRM -->
+    <div class="section hidden" id="step3">
+      <div class="step-title">3. ยืนยันการนัดหมาย</div>
+      <div class="summary-list" id="confirmSummary"></div>
+      <button id="btnConfirm">ยืนยันการนัดหมาย</button>
+      <div class="status" id="confirmStatus"></div>
+    </div>
+
+    <!-- STEP 4: DONE -->
+    <div class="section hidden confirm-card" id="step4">
+      <div class="icon">✅</div>
+      <div class="step-title" id="doneTitle">นัดหมายสำเร็จ</div>
+      <div class="summary-list" id="doneSummary"></div>
+      <button id="btnNew">นัดหมายใหม่</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== ตั้งค่า URL ของ n8n webhook ตรงนี้ =====
+const WEBHOOK_URL = 'https://regionalteam.bifrostconnect.co.th/webhook/exec-meeting';
+// ================================================
+
+const state = {
+  executives: null, // 'exe' | 'combo' | 'both'
+  date: null,
+  selectedSlot: null,
+  reschedule: null // { date, summary, callerName, callerEmail } ของนัดเดิม เมื่ออยู่ในโหมดเลื่อนนัด
+};
+
+const $ = sel => document.querySelector(sel);
+const stepEls = { 1: $('#step1'), 2: $('#step2'), 3: $('#step3'), 4: $('#step4') };
+function showStep(n) {
+  Object.values(stepEls).forEach(el => el.classList.add('hidden'));
+  stepEls[n].classList.remove('hidden');
+}
+
+// ซ่อนส่วนเวลา/สรุปเมื่อข้อมูลด้านบนถูกแก้ — เวลาว่างที่ค้นไว้อาจไม่ตรงกับข้อมูลใหม่
+// ผู้ใช้ต้องกด "ค้นหาเวลาว่าง" อีกครั้ง
+function hideResults() {
+  stepEls[2].classList.add('hidden');
+  stepEls[3].classList.add('hidden');
+  state.selectedSlot = null;
+}
+['#callerName', '#callerEmail', '#topic', '#participants', '#company'].forEach(sel => {
+  $(sel).addEventListener('input', hideResults);
+});
+
+// exec chip selection
+document.querySelectorAll('.exec-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.exec-chip').forEach(c => c.classList.remove('selected'));
+    chip.classList.add('selected');
+    state.executives = chip.dataset.exec;
+    hideResults();
+  });
+});
+
+// ===== ปฏิทินเลือกวันที่ (ใช้ร่วมกันทั้งฟอร์มจองและฟอร์มค้นหา) =====
+const THAI_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const THAI_DOWS = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+const pad2 = n => String(n).padStart(2, '0');
+const _t = new Date();
+const todayIso = `${_t.getFullYear()}-${pad2(_t.getMonth() + 1)}-${pad2(_t.getDate())}`;
+
+// ids: { field, input, display, pop, title, grid, select, prev, next }
+// opts: { restrictWeekdays (default true), placeholder }
+function createDatePicker(ids, opts) {
+  opts = opts || {};
+  const restrictWeekdays = opts.restrictWeekdays !== false;
+  const placeholderText = opts.placeholder || 'แตะเพื่อเลือกวันที่';
+
+  const fieldEl = $(ids.field), inputEl = $(ids.input), displayEl = $(ids.display),
+        popEl = $(ids.pop), titleEl = $(ids.title), gridEl = $(ids.grid),
+        selectBtn = $(ids.select), prevBtn = $(ids.prev), nextBtn = $(ids.next);
+
+  let calView = new Date(_t.getFullYear(), _t.getMonth(), 1); // เดือนที่กำลังแสดง
+  let calSelected = null; // ISO ของวันที่กดเลือกไว้ (ยังไม่กดยืนยัน "เลือก")
+
+  function render() {
+    const y = calView.getFullYear(), m = calView.getMonth();
+    titleEl.textContent = `${THAI_MONTHS[m]} ${y + 543}`;
+    gridEl.innerHTML = '';
+    THAI_DOWS.forEach(d => {
+      const el = document.createElement('div');
+      el.className = 'cal-dow';
+      el.textContent = d;
+      gridEl.appendChild(el);
+    });
+    const startDow = new Date(y, m, 1).getDay(); // 0 = อาทิตย์
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const prevMonthDays = new Date(y, m, 0).getDate();
+    for (let i = 0; i < 42; i++) {
+      const dayOffset = i - startDow + 1;
+      const el = document.createElement('div');
+      el.className = 'cal-day';
+      let cellDate;
+      if (dayOffset < 1) {
+        el.textContent = prevMonthDays + dayOffset;
+        el.classList.add('dim');
+      } else if (dayOffset > daysInMonth) {
+        el.textContent = dayOffset - daysInMonth;
+        el.classList.add('dim');
+      } else {
+        el.textContent = dayOffset;
+        cellDate = new Date(y, m, dayOffset);
+        const iso = `${y}-${pad2(m + 1)}-${pad2(dayOffset)}`;
+        const dow = cellDate.getDay();
+        if (iso < todayIso || (restrictWeekdays && (dow === 0 || dow === 6))) {
+          el.classList.add('dim'); // วันที่ผ่านมาแล้ว หรือ (ถ้าจำกัด) เสาร์-อาทิตย์ เลือกไม่ได้
+        } else {
+          if (iso === calSelected) el.classList.add('selected');
+          else if (iso === todayIso) el.classList.add('today');
+          el.addEventListener('click', () => {
+            calSelected = iso;
+            selectBtn.disabled = false;
+            render();
+          });
+        }
+      }
+      gridEl.appendChild(el);
+    }
+  }
+
+  prevBtn.addEventListener('click', () => { calView.setMonth(calView.getMonth() - 1); render(); });
+  nextBtn.addEventListener('click', () => { calView.setMonth(calView.getMonth() + 1); render(); });
+
+  displayEl.addEventListener('click', () => {
+    if (popEl.classList.contains('hidden')) {
+      if (inputEl.value) {
+        calSelected = inputEl.value;
+        const [yy, mm] = inputEl.value.split('-').map(Number);
+        calView = new Date(yy, mm - 1, 1);
+        selectBtn.disabled = false;
+      }
+      render();
+      popEl.classList.remove('hidden');
+    } else {
+      popEl.classList.add('hidden');
+    }
+  });
+
+  selectBtn.addEventListener('click', () => {
+    if (!calSelected) return;
+    inputEl.value = calSelected;
+    displayEl.textContent = formatDateTH(calSelected);
+    displayEl.classList.remove('placeholder');
+    popEl.classList.add('hidden');
+    inputEl.dispatchEvent(new Event('change'));
+  });
+
+  // คลิกที่อื่นนอกช่องวันที่/ปฏิทิน = ปิด popup อัตโนมัติ
+  // ใช้ composedPath เพราะคลิกวันในปฏิทินจะ re-render ตาราง ทำให้ e.target หลุดจาก DOM
+  // ก่อน handler นี้ทำงาน — เช็คด้วย contains() จะเข้าใจผิดว่าคลิกข้างนอก
+  document.addEventListener('click', (e) => {
+    if (!popEl.classList.contains('hidden') && !e.composedPath().includes(fieldEl)) {
+      popEl.classList.add('hidden');
+    }
+  });
+
+  function reset() {
+    inputEl.value = '';
+    calSelected = null;
+    selectBtn.disabled = true;
+    displayEl.textContent = placeholderText;
+    displayEl.classList.add('placeholder');
+    popEl.classList.add('hidden');
+    calView = new Date(_t.getFullYear(), _t.getMonth(), 1);
+  }
+
+  return { reset };
+}
+
+const dateInput = $('#dateInput');
+dateInput.addEventListener('change', hideResults);
+const bookingDatePicker = createDatePicker({
+  field: '#dateField', input: '#dateInput', display: '#dateDisplay',
+  pop: '#calPop', title: '#calTitle', grid: '#calGrid',
+  select: '#calSelect', prev: '#calPrev', next: '#calNext'
+}, { restrictWeekdays: true });
+function resetCalendar() { bookingDatePicker.reset(); }
+
+const mDateInput = $('#mDateInput');
+const manageDatePicker = createDatePicker({
+  field: '#mDateField', input: '#mDateInput', display: '#mDateDisplay',
+  pop: '#mCalPop', title: '#mCalTitle', grid: '#mCalGrid',
+  select: '#mCalSelect', prev: '#mCalPrev', next: '#mCalNext'
+}, { restrictWeekdays: true, placeholder: 'แตะเพื่อเลือกวันที่ (ถ้าไม่ทราบข้ามได้)' });
+$('#mClearDate').addEventListener('click', () => {
+  manageDatePicker.reset();
+  $('#mClearDate').classList.add('hidden');
+});
+mDateInput.addEventListener('change', () => {
+  $('#mClearDate').classList.toggle('hidden', !mDateInput.value);
+});
+
+function execArray() {
+  if (state.executives === 'both') return ['exe', 'combo'];
+  if (state.executives === 'exe') return ['exe'];
+  if (state.executives === 'combo') return ['combo'];
+  return [];
+}
+function execLabel(execArr) {
+  if (execArr.length === 2) return 'คุณกฤช และ คุณเบียร์';
+  if (execArr[0] === 'exe') return 'คุณกฤช';
+  if (execArr[0] === 'combo') return 'คุณเบียร์';
+  return '';
+}
+function formatDateTH(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00+07:00');
+  return d.toLocaleDateString('th-TH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+// ===== โหมดตัวอย่าง: ใช้เมื่อยังไม่ได้ตั้งค่า WEBHOOK_URL จริง =====
+// เอาไว้ให้ทดสอบ/ดู flow ทั้ง 4 ขั้นตอนได้ทันทีในเบราว์เซอร์ โดยไม่ต้องรอตั้งค่า n8n
+// เมื่อไหร่ที่แก้ WEBHOOK_URL ด้านบนเป็น URL จริงแล้ว โหมดนี้จะปิดอัตโนมัติ
+const DEMO_MODE = WEBHOOK_URL.includes('YOUR-N8N-HOST');
+if (DEMO_MODE) $('#demoBanner').classList.remove('hidden');
+
+function mockWebhook(payload) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      if (payload.action === 'get_availability') {
+        const ALL_SLOTS = [
+          { start: '13:00', end: '13:30' },
+          { start: '13:30', end: '14:00' },
+          { start: '14:00', end: '14:30' },
+          { start: '14:30', end: '15:00' },
+          { start: '15:00', end: '15:30' },
+          { start: '15:30', end: '16:00' }
+        ];
+        // ตัวอย่าง: สมมติว่ามีนัดจองไปแล้ว 2 ช่วง เพื่อให้เห็นว่าระบบกรองช่องที่ไม่ว่างออกจริง
+        const slots = ALL_SLOTS.filter(s => s.start !== '14:00' && s.start !== '15:00');
+        resolve({ success: true, date: payload.date, executives: payload.executives, slots, nextAvailable: null });
+      } else if (payload.action === 'book') {
+        resolve({ success: true, message: 'จองสำเร็จ (ตัวอย่าง)', eventId: 'demo-event-id', eventLink: '#' });
+      } else if (payload.action === 'find_meeting') {
+        resolve({ success: true, matches: [
+          { eventId: 'demo-1', calendarId: 'demo-cal', summary: `ตัวอย่าง : ${payload.topic || 'นัดหมายตัวอย่าง'} ${payload.callerName || ''}`.trim(), start: `${payload.date || todayIso}T14:00:00+07:00`, end: `${payload.date || todayIso}T14:30:00+07:00` }
+        ] });
+      } else if (payload.action === 'cancel') {
+        resolve({ success: true, message: `ยกเลิกนัดหมายเรียบร้อยแล้ว (ตัวอย่าง): ${payload.topic || ''}` });
+      } else {
+        resolve({ success: false, error: 'ไม่รู้จัก action นี้' });
+      }
+    }, 500);
+  });
+}
+
+async function callWebhook(payload) {
+  if (DEMO_MODE) {
+    return mockWebhook(payload);
+  }
+  const res = await fetch(WEBHOOK_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  let data;
+  try { data = await res.json(); } catch (e) { data = null; }
+  if (!res.ok && !(data && data.success === false)) {
+    throw new Error((data && (data.error || data.message)) || 'เกิดข้อผิดพลาดในการเชื่อมต่อระบบ');
+  }
+  return data;
+}
+
+// ===== STEP 1 -> STEP 2 =====
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const THAI_NAME_RE = /^[฀-๿\s]+$/;
+
+// กันพิมพ์ภาษาอื่นตั้งแต่ต้น (ไม่ใช่แค่เช็คตอนกดยืนยัน) — ตัดตัวอักษรที่ไม่ใช่ไทย/เว้นวรรค(/คอมมาถ้าอนุญาต) ออกทันทีที่พิมพ์
+function stripNonThai(str, extraAllowedChars) {
+  const re = new RegExp('[^฀-๿\\s' + (extraAllowedChars || '') + ']', 'g');
+  return str.replace(re, '');
+}
+function enforceThaiInput(el, extraAllowedChars) {
+  el.addEventListener('input', () => {
+    const filtered = stripNonThai(el.value, extraAllowedChars);
+    if (filtered !== el.value) el.value = filtered;
+  });
+}
+enforceThaiInput($('#callerName'));
+enforceThaiInput($('#participants'), ',');
+enforceThaiInput($('#mCallerName'));
+
+// ===== จัดการนัดหมายเดิม (ยกเลิก / เลื่อนนัด) =====
+const bookingCard = $('#bookingCard'), manageCard = $('#manageCard');
+
+function setActiveTab(view) {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.view === view);
+  });
+}
+
+function showManageCard() {
+  bookingCard.classList.add('hidden');
+  manageCard.classList.remove('hidden');
+  $('#mStep1').classList.remove('hidden');
+  $('#mStep2').classList.add('hidden');
+  setActiveTab('manage');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function showBookingCard() {
+  manageCard.classList.add('hidden');
+  bookingCard.classList.remove('hidden');
+  setActiveTab('booking');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.querySelectorAll('.tab-btn[data-view="booking"]').forEach(btn => btn.addEventListener('click', showBookingCard));
+document.querySelectorAll('.tab-btn[data-view="manage"]').forEach(btn => btn.addEventListener('click', showManageCard));
+
+$('#btnSearchAgain').addEventListener('click', () => {
+  $('#mStep2').classList.add('hidden');
+  $('#mStep1').classList.remove('hidden');
+  $('#searchStatus').textContent = '';
+  $('#searchStatus').className = 'status';
+});
+
+$('#btnSearch').addEventListener('click', async () => {
+  const callerName = $('#mCallerName').value.trim();
+  const callerEmail = $('#mCallerEmail').value.trim();
+  const date = $('#mDateInput').value;
+  const statusEl = $('#searchStatus');
+  statusEl.textContent = '';
+  statusEl.className = 'status';
+
+  if (!callerName) { statusEl.textContent = 'กรุณากรอกชื่อผู้ขอนัด'; statusEl.className = 'status error'; return; }
+  if (!THAI_NAME_RE.test(callerName)) { statusEl.textContent = 'กรุณากรอกชื่อผู้ขอนัดเป็นภาษาไทยเท่านั้น'; statusEl.className = 'status error'; return; }
+  if (callerEmail && !EMAIL_RE.test(callerEmail)) { statusEl.textContent = 'รูปแบบอีเมลผู้ขอนัดไม่ถูกต้อง'; statusEl.className = 'status error'; return; }
+
+  const btn = $('#btnSearch');
+  btn.disabled = true;
+  btn.innerHTML = 'กำลังค้นหา...<span class="spinner"></span>';
+
+  try {
+    const data = await callWebhook({ action: 'find_meeting', date, callerName, requesterEmail: callerEmail });
+    if (data && data.success === false) throw new Error(data.error || 'ค้นหานัดหมายไม่สำเร็จ');
+    renderMeetings(data.matches || [], { callerName, callerEmail });
+  } catch (err) {
+    statusEl.textContent = err.message;
+    statusEl.className = 'status error';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'ค้นหานัดหมาย';
+  }
+});
+
+function renderMeetings(matches, identity) {
+  $('#mStep1').classList.add('hidden');
+  $('#mStep2').classList.remove('hidden');
+  const list = $('#meetingsList');
+  list.innerHTML = '';
+
+  if (!matches.length) {
+    list.innerHTML = '<div class="empty-msg">ไม่พบนัดหมายที่ตรงกับข้อมูลที่ให้มา ลองตรวจสอบชื่อ/อีเมล หรือระบุวันที่เพื่อค้นหาให้แคบลง</div>';
+    return;
+  }
+
+  matches
+    .slice()
+    .sort((a, b) => (a.start || '').localeCompare(b.start || ''))
+    .forEach(ev => {
+      const dateIso = (ev.start || '').slice(0, 10);
+      const timeStr = (ev.start || '').length >= 16 ? `${(ev.start || '').slice(11, 16)} - ${(ev.end || '').slice(11, 16)} น.` : '';
+      const row = document.createElement('div');
+      row.className = 'meeting-row';
+      row.innerHTML = `
+        <div class="meeting-date">${formatDateTH(dateIso)}</div>
+        ${timeStr ? `<div class="meeting-time">${timeStr}</div>` : ''}
+        <div class="meeting-summary">${escapeHtml(ev.summary || '')}</div>
+        <div class="meeting-actions row">
+          <button class="secondary btn-reschedule">เลื่อนนัด</button>
+          <button class="btn-danger btn-cancel-meeting">ยกเลิกนัด</button>
+        </div>
+        <div class="confirm-cancel hidden" style="margin-top:10px;">
+          <div style="font-size:13px;margin-bottom:8px;">ยืนยันยกเลิกนัดนี้ใช่หรือไม่?</div>
+          <div class="row">
+            <button class="btn-danger-solid btn-confirm-cancel">ใช่ ยกเลิกนัด</button>
+            <button class="secondary btn-abort-cancel">ไม่ใช่</button>
+          </div>
+          <div class="status"></div>
+        </div>
+      `;
+      row.querySelector('.btn-reschedule').addEventListener('click', () => startReschedule(ev, dateIso, identity));
+      row.querySelector('.btn-cancel-meeting').addEventListener('click', () => {
+        row.querySelector('.meeting-actions').classList.add('hidden');
+        row.querySelector('.confirm-cancel').classList.remove('hidden');
+      });
+      row.querySelector('.btn-abort-cancel').addEventListener('click', () => {
+        row.querySelector('.confirm-cancel').classList.add('hidden');
+        row.querySelector('.meeting-actions').classList.remove('hidden');
+      });
+      row.querySelector('.btn-confirm-cancel').addEventListener('click', async () => {
+        const confirmBtn = row.querySelector('.btn-confirm-cancel');
+        const rowStatusEl = row.querySelector('.confirm-cancel .status');
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = 'กำลังยกเลิก...<span class="spinner"></span>';
+        rowStatusEl.textContent = '';
+        rowStatusEl.className = 'status';
+        try {
+          const res = await callWebhook({ action: 'cancel', date: dateIso, topic: ev.summary || '', callerName: identity.callerName, requesterEmail: identity.callerEmail });
+          if (res && res.success === false) throw new Error(res.error || 'ยกเลิกไม่สำเร็จ');
+          row.innerHTML = '<div class="empty-msg" style="color:var(--green);">✅ ยกเลิกนัดหมายนี้เรียบร้อยแล้ว</div>';
+        } catch (err) {
+          rowStatusEl.textContent = err.message;
+          rowStatusEl.className = 'status error';
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = 'ใช่ ยกเลิกนัด';
+        }
+      });
+      list.appendChild(row);
+    });
+}
+
+function startReschedule(ev, dateIso, identity) {
+  state.reschedule = { date: dateIso, summary: ev.summary || '', callerName: identity.callerName, callerEmail: identity.callerEmail };
+  showBookingCard();
+  showStep(1);
+  hideResults();
+
+  $('#callerName').value = identity.callerName;
+  $('#callerName').readOnly = true;
+  $('#callerEmail').value = identity.callerEmail;
+  $('#callerEmail').readOnly = true;
+  $('#topic').value = ev.summary || '';
+  $('#participants').value = '';
+  $('#company').value = '';
+  document.querySelectorAll('.exec-chip').forEach(c => c.classList.remove('selected'));
+  state.executives = null;
+  resetCalendar();
+  state.date = null;
+  state.selectedSlot = null;
+
+  $('#rescheduleBanner').querySelector('.reschedule-old-info').textContent = `${formatDateTH(dateIso)} — ${ev.summary || ''}`;
+  $('#rescheduleBanner').classList.remove('hidden');
+}
+
+$('#cancelRescheduleLink').addEventListener('click', () => {
+  state.reschedule = null;
+  $('#callerName').value = '';
+  $('#callerName').readOnly = false;
+  $('#callerEmail').value = '';
+  $('#callerEmail').readOnly = false;
+  $('#topic').value = '';
+  $('#rescheduleBanner').classList.add('hidden');
+  hideResults();
+});
+
+$('#btnCheck').addEventListener('click', async () => {
+  const callerName = $('#callerName').value.trim();
+  const callerEmail = $('#callerEmail').value.trim();
+  const topic = $('#topic').value.trim();
+  const participants = $('#participants').value.trim();
+  const company = $('#company').value.trim();
+  const date = dateInput.value;
+  const statusEl = $('#formStatus');
+  statusEl.textContent = '';
+  statusEl.className = 'status';
+
+  if (!callerName || !topic) { statusEl.textContent = 'กรุณากรอกชื่อผู้ขอนัดและหัวข้อประชุม'; statusEl.className = 'status error'; return; }
+  if (!THAI_NAME_RE.test(callerName)) { statusEl.textContent = 'กรุณากรอกชื่อผู้ขอนัดเป็นภาษาไทยเท่านั้น'; statusEl.className = 'status error'; return; }
+  if (participants && participants.split(',').some(p => p.trim() && !THAI_NAME_RE.test(p.trim()))) { statusEl.textContent = 'กรุณากรอกรายชื่อผู้เข้าร่วมเป็นภาษาไทยเท่านั้น (คั่นด้วยจุลภาค)'; statusEl.className = 'status error'; return; }
+  if (callerEmail && !EMAIL_RE.test(callerEmail)) { statusEl.textContent = 'รูปแบบอีเมลผู้ขอนัดไม่ถูกต้อง'; statusEl.className = 'status error'; return; }
+  if (!company) { statusEl.textContent = 'กรุณากรอกบริษัท/โปรเจคของผู้ขอนัด'; statusEl.className = 'status error'; return; }
+  if (!state.executives) { statusEl.textContent = 'กรุณาเลือกผู้บริหารที่ต้องการนัด'; statusEl.className = 'status error'; return; }
+  if (!date) { statusEl.textContent = 'กรุณาเลือกวันที่'; statusEl.className = 'status error'; return; }
+
+  const dow = new Date(date + 'T00:00:00+07:00').getDay();
+  if (dow === 0 || dow === 6) { statusEl.textContent = 'กรุณาเลือกวันจันทร์-ศุกร์เท่านั้น'; statusEl.className = 'status error'; return; }
+
+  state.date = date;
+  const btn = $('#btnCheck');
+  btn.disabled = true;
+  btn.innerHTML = 'กำลังตรวจสอบ...<span class="spinner"></span>';
+
+  try {
+    const data = await callWebhook({ action: 'get_availability', date, executives: execArray() });
+    renderSlots(data);
+    renderConfirmSummary();
+    stepEls[2].classList.remove('hidden');
+    stepEls[3].classList.remove('hidden');
+    // เลื่อนหน้าลงไปที่ส่วนเลือกเวลาให้อัตโนมัติ ผู้ใช้ไม่ต้อง scroll เอง
+    // (หน่วงหนึ่งจังหวะให้เบราว์เซอร์วาดส่วนที่เพิ่งโผล่เสร็จก่อน ไม่งั้น smooth scroll ถูกยกเลิก)
+    setTimeout(() => stepEls[2].scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+  } catch (err) {
+    statusEl.textContent = err.message;
+    statusEl.className = 'status error';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'ค้นหาเวลาว่าง';
+  }
+});
+
+function renderSlots(data) {
+  $('#slotDateLabel').textContent = formatDateTH(data.date);
+  const container = $('#slotsContainer');
+  const suggestContainer = $('#suggestContainer');
+  container.innerHTML = '';
+  suggestContainer.innerHTML = '';
+  state.selectedSlot = null;
+
+  if (!data.slots || data.slots.length === 0) {
+    container.innerHTML = '<div class="empty-msg">วันนี้ไม่มีเวลาว่างแล้ว</div>';
+    if (data.nextAvailable) {
+      const box = document.createElement('div');
+      box.className = 'suggest-box';
+      box.innerHTML = `<b>วันที่ใกล้เคียงที่ว่าง:</b> ${formatDateTH(data.nextAvailable.date)}`;
+      const grid = document.createElement('div');
+      grid.className = 'slots-grid';
+      data.nextAvailable.slots.forEach(slot => {
+        const b = document.createElement('div');
+        b.className = 'slot-btn';
+        b.textContent = slot.start + '-' + slot.end;
+        b.addEventListener('click', () => selectSlot(b, data.nextAvailable.date, slot));
+        grid.appendChild(b);
+      });
+      box.appendChild(grid);
+      suggestContainer.appendChild(box);
+    } else {
+      suggestContainer.innerHTML = '<div class="empty-msg">ไม่พบเวลาว่างในอีก 21 วันข้างหน้า กรุณาติดต่อเจ้าหน้าที่โดยตรง</div>';
+    }
+    return;
+  }
+
+  const grid = document.createElement('div');
+  grid.className = 'slots-grid';
+  data.slots.forEach(slot => {
+    const b = document.createElement('div');
+    b.className = 'slot-btn';
+    b.textContent = slot.start + '-' + slot.end;
+    b.addEventListener('click', () => selectSlot(b, data.date, slot));
+    grid.appendChild(b);
+  });
+  container.appendChild(grid);
+}
+
+function selectSlot(btnEl, date, slot) {
+  document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+  btnEl.classList.add('selected');
+  state.date = date;
+  state.selectedSlot = slot;
+  renderConfirmSummary();
+}
+
+function renderConfirmSummary() {
+  const execArr = execArray();
+  const slotText = state.selectedSlot
+    ? `${state.selectedSlot.start} - ${state.selectedSlot.end} น.`
+    : '<span style="color:var(--muted);">ยังไม่ได้เลือก — กรุณาเลือกเวลาในข้อ 2</span>';
+  $('#confirmSummary').innerHTML = `
+    <div><b>ผู้ขอนัด:</b> ${escapeHtml($('#callerName').value.trim())}</div>
+    <div><b>อีเมลผู้ขอนัด:</b> ${escapeHtml($('#callerEmail').value.trim()) || '<span style="color:var(--muted);">ไม่ระบุ — จะไม่มีการส่งคำเชิญ</span>'}</div>
+    <div><b>หัวข้อ:</b> ${escapeHtml($('#topic').value.trim())}</div>
+    <div><b>ผู้เข้าร่วม:</b> ${escapeHtml($('#participants').value.trim()) || '-'}</div>
+    <div><b>บริษัท/โปรเจค:</b> ${escapeHtml($('#company').value.trim()) || '-'}</div>
+    <div><b>ผู้บริหาร:</b> ${execLabel(execArr)}</div>
+    <div><b>วันที่:</b> ${formatDateTH(state.date)}</div>
+    <div><b>เวลา:</b> ${slotText}</div>
+  `;
+  $('#btnConfirm').disabled = !state.selectedSlot;
+  $('#confirmStatus').textContent = '';
+  $('#confirmStatus').className = 'status';
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ===== STEP 3 -> STEP 4 (BOOK) =====
+$('#btnConfirm').addEventListener('click', async () => {
+  const statusEl = $('#confirmStatus');
+  const btn = $('#btnConfirm');
+  btn.disabled = true;
+  btn.innerHTML = 'กำลังบันทึกนัดหมาย...<span class="spinner"></span>';
+  statusEl.textContent = '';
+  statusEl.className = 'status';
+
+  const payload = {
+    action: 'book',
+    date: state.date,
+    start: state.selectedSlot.start,
+    executives: execArray(),
+    callerName: $('#callerName').value.trim(),
+    requesterEmail: $('#callerEmail').value.trim(),
+    topic: $('#topic').value.trim(),
+    participants: $('#participants').value.trim(),
+    company: $('#company').value.trim()
+  };
+
+  try {
+    const data = await callWebhook(payload);
+    if (data && data.success === false) {
+      statusEl.textContent = data.error || 'ช่วงเวลานี้ถูกจองไปแล้ว กรุณาเลือกเวลาใหม่';
+      statusEl.className = 'status error';
+      // refresh availability so the user can pick again (sections stay expanded)
+      const fresh = await callWebhook({ action: 'get_availability', date: state.date, executives: execArray() });
+      renderSlots(fresh);
+      renderConfirmSummary();
+      return;
+    }
+
+    // ถ้ากำลังเลื่อนนัด (ไม่ใช่จองใหม่ล้วนๆ) — นัดใหม่จองสำเร็จแล้ว ให้ยกเลิกนัดเดิมต่อทันที
+    let oldCancelWarning = '';
+    if (state.reschedule) {
+      try {
+        const cancelRes = await callWebhook({
+          action: 'cancel',
+          date: state.reschedule.date,
+          topic: state.reschedule.summary,
+          callerName: state.reschedule.callerName,
+          requesterEmail: state.reschedule.callerEmail
+        });
+        if (cancelRes && cancelRes.success === false) {
+          oldCancelWarning = `⚠️ จองนัดใหม่สำเร็จแล้ว แต่ยกเลิกนัดเดิม (${escapeHtml(state.reschedule.summary)}) ไม่สำเร็จ: ${escapeHtml(cancelRes.error || '')} กรุณายกเลิกนัดเดิมด้วยตนเองผ่านหน้า "ยกเลิก/เลื่อนนัดหมาย"`;
+        }
+      } catch (cancelErr) {
+        oldCancelWarning = `⚠️ จองนัดใหม่สำเร็จแล้ว แต่ยกเลิกนัดเดิมไม่สำเร็จ: ${escapeHtml(cancelErr.message)} กรุณายกเลิกนัดเดิมด้วยตนเองผ่านหน้า "ยกเลิก/เลื่อนนัดหมาย"`;
+      }
+    }
+
+    $('#doneTitle').textContent = state.reschedule ? 'เลื่อนนัดหมายสำเร็จ' : 'นัดหมายสำเร็จ';
+    $('#doneSummary').innerHTML = `
+      <div><b>หัวข้อ:</b> ${escapeHtml(payload.topic)}</div>
+      <div><b>ผู้บริหาร:</b> ${execLabel(execArray())}</div>
+      <div><b>วันที่:</b> ${formatDateTH(state.date)}</div>
+      <div><b>เวลา:</b> ${state.selectedSlot.start} - ${state.selectedSlot.end} น.</div>
+      <div style="margin-top:8px;color:var(--muted);font-size:13px;">${payload.requesterEmail ? `ระบบส่งคำเชิญยืนยันไปที่ ${escapeHtml(payload.requesterEmail)} แล้ว เช็คอีเมลเพื่อกดตอบรับ` : 'เพิ่มนัดหมายลงปฏิทินเรียบร้อยแล้ว (ไม่ได้ระบุอีเมล จึงไม่มีการส่งคำเชิญ)'}</div>
+      ${state.reschedule && !oldCancelWarning ? `<div style="margin-top:4px;color:var(--muted);font-size:13px;">นัดหมายเดิม (${escapeHtml(state.reschedule.summary)}) ถูกยกเลิกให้เรียบร้อยแล้ว</div>` : ''}
+      ${oldCancelWarning ? `<div style="margin-top:8px;color:var(--red);font-size:13px;">${oldCancelWarning}</div>` : ''}
+    `;
+    state.reschedule = null;
+    $('#callerName').readOnly = false;
+    $('#callerEmail').readOnly = false;
+    $('#rescheduleBanner').classList.add('hidden');
+    showStep(4);
+  } catch (err) {
+    statusEl.textContent = err.message;
+    statusEl.className = 'status error';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'ยืนยันการนัดหมาย';
+  }
+});
+
+$('#btnNew').addEventListener('click', () => {
+  $('#callerName').value = '';
+  $('#callerName').readOnly = false;
+  $('#callerEmail').value = '';
+  $('#callerEmail').readOnly = false;
+  $('#topic').value = '';
+  $('#participants').value = '';
+  $('#company').value = '';
+  resetCalendar();
+  document.querySelectorAll('.exec-chip').forEach(c => c.classList.remove('selected'));
+  state.executives = null;
+  state.date = null;
+  state.selectedSlot = null;
+  state.reschedule = null;
+  $('#rescheduleBanner').classList.add('hidden');
+  showStep(1);
+});
+</script>
+</body>
+</html>

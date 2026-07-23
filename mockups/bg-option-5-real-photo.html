@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup 5 — Real Photo (Ken Burns)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --charcoal: #211D19;
+    --dark-gray: #5C5448;
+    --gray-warm: #948B7A;
+    --card-bg: #FFFFFF;
+    --border: #E5DBC9;
+    --champagne: #E8D9BB;
+    --champagne-gold: #C9A96A;
+    --champagne-gold-dark: #AD8C4F;
+    --rose-gold: #C98F7B;
+    --pink-gold: #E7A79C;
+    --pink-gold-deep: #CE8479;
+    --copper: #B8733B;
+    --champagne-tint: #F4EAD8;
+    --gradient-metal: linear-gradient(135deg, #C9A96A 0%, #E7A79C 45%, #C98F7B 75%, #B8733B 100%);
+    --gradient-pink: linear-gradient(135deg, #EFC2B8 0%, #E7A79C 45%, #CE8479 100%);
+    --muted: #948B7A;
+    --green: #5C7A5C;
+    --red: #A6423A;
+  }
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: 'Prompt', 'Segoe UI', 'Sarabun', system-ui, sans-serif;
+    color: var(--charcoal);
+    padding: 24px 16px 60px;
+    min-height: 100vh;
+    position: relative;
+    background: #F8ECE7; /* fallback while the photo loads */
+  }
+
+  /* ===== MOCKUP 5: ACTUAL REFERENCE PHOTO, slow Ken-Burns pan/zoom =====
+     Real photographic detail — no synthesized gradients/noise. Only `transform`
+     is animated, so it stays perfectly smooth regardless of how slow it runs. */
+  .photo-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: url('reference.jpg');
+    background-size: cover;
+    background-position: center;
+    transform-origin: 50% 50%;
+    animation: photoDrift 160s ease-in-out infinite alternate;
+  }
+  @keyframes photoDrift {
+    0%   { transform: scale(1.14) translate(0%, 0%); }
+    50%  { transform: scale(1.18) translate(-2.2%, 1.6%); }
+    100% { transform: scale(1.22) translate(2.2%, -1.6%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .photo-bg { animation: none; }
+  }
+  /* soft white wash so the white cards still read clearly against a busy photo */
+  .photo-wash {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(120% 90% at 50% 30%, rgba(255,255,255,.18), rgba(255,255,255,0) 60%);
+  }
+  /* ===== end mockup background ===== */
+
+  .mockup-badge {
+    position: fixed; top: 14px; right: 14px; z-index: 5;
+    background: rgba(33,29,25,.78); color: #fff; font-size: 12px; font-weight: 500;
+    padding: 6px 12px; border-radius: 999px; letter-spacing: .2px;
+  }
+
+  .wrap { max-width: 640px; margin: 0 auto; position: relative; z-index: 1; }
+  h1 {
+    font-size: 25px; font-weight: 700; margin: 0 0 4px; letter-spacing: .3px;
+    background: var(--gradient-pink);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .sub { color: var(--gray-warm); font-size: 14px; margin-bottom: 24px; font-weight: 300; }
+  .card {
+    position: relative;
+    overflow: hidden;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px 20px 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 14px 34px -18px rgba(120,90,45,.35), 0 1px 2px rgba(0,0,0,.03);
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: var(--gradient-metal);
+  }
+  .step-title { font-weight: 600; font-size: 15px; margin-bottom: 14px; color: var(--charcoal); letter-spacing: .2px; }
+  label { display: block; font-size: 13px; font-weight: 500; margin: 12px 0 6px; color: var(--dark-gray); }
+  label:first-child { margin-top: 0; }
+  input[type=text], input[type=date], textarea, select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #FCFAF5;
+    color: var(--charcoal);
+  }
+  input[type=text]:focus, input[type=date]:focus, textarea:focus, select:focus {
+    outline: none; border-color: var(--pink-gold);
+    box-shadow: 0 0 0 3px rgba(231,167,156,.22);
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  .exec-options { display: flex; gap: 10px; flex-wrap: wrap; }
+  .exec-chip {
+    flex: 1; min-width: 120px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 12px; text-align: center; cursor: pointer;
+    font-size: 14px; font-weight: 500; color: var(--dark-gray); background: #FCFAF5;
+    user-select: none; transition: .2s;
+  }
+  .exec-chip.selected {
+    border-color: transparent; background: var(--gradient-pink); color: #fff;
+    font-weight: 600; box-shadow: 0 8px 18px -8px rgba(206,132,121,.55);
+  }
+  button {
+    background: var(--gradient-pink); color: #fff; border: none;
+    padding: 12px 20px; border-radius: 12px; font-size: 15px; font-family: inherit;
+    font-weight: 600; letter-spacing: .2px; cursor: pointer; width: 100%; margin-top: 16px;
+    box-shadow: 0 10px 22px -10px rgba(206,132,121,.6);
+    transition: transform .15s, box-shadow .15s, opacity .15s;
+  }
+  button:hover { transform: translateY(-1px); box-shadow: 0 14px 26px -10px rgba(206,132,121,.65); }
+  button.secondary {
+    background: #fff; color: var(--champagne-gold-dark);
+    border: 1.5px solid var(--champagne-gold); box-shadow: none;
+  }
+  button.secondary:hover { background: var(--champagne-tint); transform: none; box-shadow: none; }
+</style>
+</head>
+<body>
+<div class="photo-bg"></div>
+<div class="photo-wash"></div>
+<div class="mockup-badge">Mockup 5 · Real Photo (Ken Burns)</div>
+<div class="wrap">
+  <h1>ระบบนัดหมายผู้บริหาร</h1>
+  <div class="sub">จันทร์–ศุกร์ เวลา 13:00–16:00 น. (นัดละ 30 นาที)</div>
+
+  <div class="card">
+    <div class="step-title">1. รายละเอียดการนัดหมาย</div>
+    <label>ชื่อผู้ขอนัด *</label>
+    <input type="text" placeholder="เช่น คุณสมชาย">
+    <label>อีเมลผู้ขอนัด *</label>
+    <input type="text" placeholder="เช่น somchai@company.com">
+    <label>หัวข้อประชุม *</label>
+    <input type="text" placeholder="เช่น หารือแผนงานไตรมาส 3">
+    <label>ผู้บริหารที่ต้องการนัด *</label>
+    <div class="exec-options">
+      <div class="exec-chip selected">คุณกฤช</div>
+      <div class="exec-chip">คุณเบียร์</div>
+      <div class="exec-chip">ทั้งคู่</div>
+    </div>
+    <label>วันที่ต้องการนัด *</label>
+    <input type="date">
+    <button>ค้นหาเวลาว่าง</button>
+    <button class="secondary">← กลับไปแก้ไขข้อมูล</button>
+  </div>
+</div>
+</body>
+</html>

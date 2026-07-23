@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup 3 — Liquid Marble + Glitter Background</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --charcoal: #211D19;
+    --dark-gray: #5C5448;
+    --gray-warm: #948B7A;
+    --card-bg: #FFFFFF;
+    --border: #E5DBC9;
+    --champagne: #E8D9BB;
+    --champagne-gold: #C9A96A;
+    --champagne-gold-dark: #AD8C4F;
+    --rose-gold: #C98F7B;
+    --pink-gold: #E7A79C;
+    --pink-gold-deep: #CE8479;
+    --copper: #B8733B;
+    --champagne-tint: #F4EAD8;
+    --gradient-metal: linear-gradient(135deg, #C9A96A 0%, #E7A79C 45%, #C98F7B 75%, #B8733B 100%);
+    --gradient-pink: linear-gradient(135deg, #EFC2B8 0%, #E7A79C 45%, #CE8479 100%);
+    --muted: #948B7A;
+    --green: #5C7A5C;
+    --red: #A6423A;
+  }
+  * { box-sizing: border-box; }
+
+  /* ===== MOCKUP 3: LIQUID MARBLE SWIRL + GOLD GLITTER ===== */
+  body {
+    margin: 0;
+    font-family: 'Prompt', 'Segoe UI', 'Sarabun', system-ui, sans-serif;
+    color: var(--charcoal);
+    padding: 24px 16px 60px;
+    min-height: 100vh;
+    position: relative;
+    background-color: #F8ECE7;
+    background-image:
+      radial-gradient(900px 650px at 15% 8%,  rgba(255,255,255,.85), transparent 55%),
+      radial-gradient(1000px 750px at 85% 12%, rgba(231,167,156,.45), transparent 60%),
+      radial-gradient(1100px 800px at 28% 82%, rgba(201,169,106,.28), transparent 60%),
+      radial-gradient(950px 700px at 80% 88%,  rgba(217,140,120,.35), transparent 60%),
+      radial-gradient(700px 520px at 55% 45%,  rgba(255,255,255,.55), transparent 55%),
+      linear-gradient(120deg, transparent 30%, rgba(255,255,255,.55) 45%, transparent 60%),
+      linear-gradient(120deg, transparent 55%, rgba(255,244,230,.40) 65%, transparent 75%),
+      linear-gradient(150deg, #FBEFEA 0%, #F3DAD3 35%, #E9C3B8 65%, #F6E7DC 100%);
+    background-size:
+      220% 220%, 220% 220%, 220% 220%, 220% 220%, 220% 220%,
+      260% 260%, 260% 260%, 100% 100%;
+    background-repeat: no-repeat;
+    animation: liquidDrift 95s ease-in-out infinite alternate;
+  }
+  @keyframes liquidDrift {
+    0%   { background-position: 0% 0%,  100% 0%,  20% 100%, 90% 90%, 50% 50%, 0% 0%,   100% 100%, 0 0; }
+    50%  { background-position: 20% 25%, 75% 20%,  35% 80%,  70% 70%, 55% 40%, 30% 20%, 65% 70%,   0 0; }
+    100% { background-position: 10% 40%, 85% 10%,  45% 90%,  80% 75%, 45% 55%, 15% 35%, 80% 55%,   0 0; }
+  }
+
+  /* glitter layer 1 — larger, sparser sparkles, drifts + twinkles slowly */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    mix-blend-mode: screen;
+    background-repeat: repeat;
+    background-size: 280px 280px;
+    background-image:
+      radial-gradient(circle at 10% 20%, rgba(255,250,235,.95) 0 1.6px, transparent 2.4px),
+      radial-gradient(circle at 35% 65%, rgba(212,175,120,.85) 0 1.2px, transparent 2px),
+      radial-gradient(circle at 60% 15%, rgba(255,255,255,.90) 0 1.4px, transparent 2.2px),
+      radial-gradient(circle at 80% 55%, rgba(201,169,106,.80) 0 2px,  transparent 2.8px),
+      radial-gradient(circle at 20% 85%, rgba(255,255,255,.75) 0 1.2px, transparent 2px),
+      radial-gradient(circle at 50% 40%, rgba(231,167,156,.85) 0 1.6px, transparent 2.4px),
+      radial-gradient(circle at 90% 90%, rgba(255,244,220,.80) 0 1.2px, transparent 2px),
+      radial-gradient(circle at 5% 50%,  rgba(212,175,120,.75) 0 1.4px, transparent 2.2px);
+    animation: twinkle1 6s ease-in-out infinite, glitterDrift1 120s ease-in-out infinite alternate;
+    opacity: .8;
+  }
+  /* glitter layer 2 — smaller, denser sparkles, offset timing so it never syncs with layer 1 */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    mix-blend-mode: screen;
+    background-repeat: repeat;
+    background-size: 190px 190px;
+    background-image:
+      radial-gradient(circle at 15% 30%, rgba(255,255,255,.85) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 45% 10%, rgba(212,175,120,.70) 0 1.2px, transparent 1.8px),
+      radial-gradient(circle at 70% 60%, rgba(255,250,235,.80) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 25% 75%, rgba(231,167,156,.70) 0 1.1px, transparent 1.7px),
+      radial-gradient(circle at 90% 25%, rgba(255,255,255,.75) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 55% 90%, rgba(201,169,106,.65) 0 1.2px, transparent 1.8px);
+    animation: twinkle2 4.5s ease-in-out infinite 1.2s, glitterDrift2 150s ease-in-out infinite alternate;
+    opacity: .7;
+  }
+  @keyframes twinkle1 { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+  @keyframes twinkle2 { 0%, 100% { opacity: .35; } 50% { opacity: .85; } }
+  @keyframes glitterDrift1 { 0% { background-position: 0 0; } 100% { background-position: 140px 90px; } }
+  @keyframes glitterDrift2 { 0% { background-position: 0 0; } 100% { background-position: -110px 70px; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    body, body::before, body::after { animation: none; }
+  }
+  /* ===== end mockup background ===== */
+
+  .mockup-badge {
+    position: fixed; top: 14px; right: 14px; z-index: 5;
+    background: rgba(33,29,25,.78); color: #fff; font-size: 12px; font-weight: 500;
+    padding: 6px 12px; border-radius: 999px; letter-spacing: .2px;
+  }
+
+  .wrap { max-width: 640px; margin: 0 auto; position: relative; z-index: 1; }
+  h1 {
+    font-size: 25px; font-weight: 700; margin: 0 0 4px; letter-spacing: .3px;
+    background: var(--gradient-pink);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .sub { color: var(--gray-warm); font-size: 14px; margin-bottom: 24px; font-weight: 300; }
+  .card {
+    position: relative;
+    overflow: hidden;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px 20px 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 14px 34px -18px rgba(120,90,45,.35), 0 1px 2px rgba(0,0,0,.03);
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: var(--gradient-metal);
+  }
+  .step-title { font-weight: 600; font-size: 15px; margin-bottom: 14px; color: var(--charcoal); letter-spacing: .2px; }
+  label { display: block; font-size: 13px; font-weight: 500; margin: 12px 0 6px; color: var(--dark-gray); }
+  label:first-child { margin-top: 0; }
+  input[type=text], input[type=date], textarea, select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #FCFAF5;
+    color: var(--charcoal);
+  }
+  input[type=text]:focus, input[type=date]:focus, textarea:focus, select:focus {
+    outline: none; border-color: var(--pink-gold);
+    box-shadow: 0 0 0 3px rgba(231,167,156,.22);
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  .exec-options { display: flex; gap: 10px; flex-wrap: wrap; }
+  .exec-chip {
+    flex: 1; min-width: 120px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 12px; text-align: center; cursor: pointer;
+    font-size: 14px; font-weight: 500; color: var(--dark-gray); background: #FCFAF5;
+    user-select: none; transition: .2s;
+  }
+  .exec-chip.selected {
+    border-color: transparent; background: var(--gradient-pink); color: #fff;
+    font-weight: 600; box-shadow: 0 8px 18px -8px rgba(206,132,121,.55);
+  }
+  button {
+    background: var(--gradient-pink); color: #fff; border: none;
+    padding: 12px 20px; border-radius: 12px; font-size: 15px; font-family: inherit;
+    font-weight: 600; letter-spacing: .2px; cursor: pointer; width: 100%; margin-top: 16px;
+    box-shadow: 0 10px 22px -10px rgba(206,132,121,.6);
+    transition: transform .15s, box-shadow .15s, opacity .15s;
+  }
+  button:hover { transform: translateY(-1px); box-shadow: 0 14px 26px -10px rgba(206,132,121,.65); }
+  button.secondary {
+    background: #fff; color: var(--champagne-gold-dark);
+    border: 1.5px solid var(--champagne-gold); box-shadow: none;
+  }
+  button.secondary:hover { background: var(--champagne-tint); transform: none; box-shadow: none; }
+</style>
+</head>
+<body>
+<div class="mockup-badge">Mockup 3 · Liquid Marble + Glitter</div>
+<div class="wrap">
+  <h1>ระบบนัดหมายผู้บริหาร</h1>
+  <div class="sub">จันทร์–ศุกร์ เวลา 13:00–16:00 น. (นัดละ 30 นาที)</div>
+
+  <div class="card">
+    <div class="step-title">1. รายละเอียดการนัดหมาย</div>
+    <label>ชื่อผู้ขอนัด *</label>
+    <input type="text" placeholder="เช่น คุณสมชาย">
+    <label>อีเมลผู้ขอนัด *</label>
+    <input type="text" placeholder="เช่น somchai@company.com">
+    <label>หัวข้อประชุม *</label>
+    <input type="text" placeholder="เช่น หารือแผนงานไตรมาส 3">
+    <label>ผู้บริหารที่ต้องการนัด *</label>
+    <div class="exec-options">
+      <div class="exec-chip selected">คุณกฤช</div>
+      <div class="exec-chip">คุณเบียร์</div>
+      <div class="exec-chip">ทั้งคู่</div>
+    </div>
+    <label>วันที่ต้องการนัด *</label>
+    <input type="date">
+    <button>ค้นหาเวลาว่าง</button>
+    <button class="secondary">← กลับไปแก้ไขข้อมูล</button>
+  </div>
+</div>
+</body>
+</html>

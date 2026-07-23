@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup 18 — Velvet Burgundy / Peony Veil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #2E0F16; --slate: #7A555C; --slate-light: #A8888D;
+    --card-bg: #FFFFFF; --border: #F3DCE6;
+    --velvet-burgundy: #4A0F1C; /* guessed — original hex #3ADE18 was bright green, likely misread */
+    --crimson-rose: #8E1E2D;
+    --dusty-mauve: #A76E73;
+    --blush-petal: #E384C6;
+    --peony-veil: #F7E5EE; /* guessed — original hex "#7EPEE" was invalid */
+    --gradient-metal: linear-gradient(135deg, #4A0F1C 0%, #8E1E2D 30%, #A76E73 55%, #E384C6 78%, #F7E5EE 100%);
+    --gradient-accent: linear-gradient(135deg, #8E1E2D 0%, #4A0F1C 100%);
+    --gradient-header: linear-gradient(135deg, #E384C6 0%, #F7E5EE 100%);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: 'Prompt', 'Segoe UI', 'Sarabun', system-ui, sans-serif;
+    color: var(--ink); padding: 24px 16px 60px; min-height: 100vh; position: relative;
+  }
+  /* ===== velvet burgundy (top) -> peony veil (bottom), static, pinned to viewport ===== */
+  .page-bg {
+    position: fixed; inset: 0; z-index: -1;
+    background: linear-gradient(180deg,
+      #4A0F1C 0%,
+      #8E1E2D 30%,
+      #A76E73 55%,
+      #E384C6 78%,
+      #F7E5EE 100%);
+  }
+
+  .mockup-badge {
+    position: fixed; top: 14px; right: 14px; z-index: 5;
+    background: rgba(74,15,28,.85); color: #fff; font-size: 12px; font-weight: 500;
+    padding: 6px 12px; border-radius: 999px; letter-spacing: .2px;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; position: relative; z-index: 1; }
+  h1 {
+    font-size: 25px; font-weight: 700; margin: 0 0 4px; letter-spacing: .3px;
+    background: var(--gradient-header);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .sub { color: rgba(247,229,238,.75); font-size: 14px; margin-bottom: 24px; font-weight: 300; }
+  .card {
+    position: relative; overflow: hidden; background: var(--card-bg);
+    border: 1px solid var(--border); border-radius: 18px; padding: 24px 20px 20px;
+    box-shadow: 0 18px 40px -18px rgba(74,15,28,.35), 0 1px 2px rgba(0,0,0,.05);
+  }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--gradient-metal); }
+  .section { padding-top: 22px; margin-top: 22px; border-top: 1px solid var(--border); }
+  .section:first-child { padding-top: 0; margin-top: 0; border-top: none; }
+  .step-title { font-weight: 600; font-size: 15px; margin-bottom: 14px; color: var(--velvet-burgundy); }
+  label { display: block; font-size: 13px; font-weight: 500; margin: 12px 0 6px; color: var(--slate); }
+  label:first-child { margin-top: 0; }
+  input[type=text], input[type=date] {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px;
+    font-size: 14px; font-family: inherit; background: #FDF7F9; color: var(--ink);
+  }
+  input[type=text]:focus, input[type=date]:focus {
+    outline: none; border-color: var(--crimson-rose);
+    box-shadow: 0 0 0 3px rgba(142,30,45,.16);
+  }
+  .exec-options { display: flex; gap: 10px; flex-wrap: wrap; }
+  .exec-chip {
+    flex: 1; min-width: 120px; border: 1.5px solid var(--border); border-radius: 12px; padding: 12px;
+    text-align: center; font-size: 14px; font-weight: 500; color: var(--slate); background: #FDF7F9;
+  }
+  .exec-chip.selected {
+    border-color: transparent; background: var(--gradient-accent); color: var(--peony-veil); font-weight: 600;
+    box-shadow: 0 8px 18px -8px rgba(74,15,28,.5);
+  }
+  button {
+    background: var(--gradient-accent); color: var(--peony-veil); border: none; padding: 12px 20px; border-radius: 12px;
+    font-size: 15px; font-family: inherit; font-weight: 600; width: 100%; margin-top: 16px;
+    box-shadow: 0 10px 22px -10px rgba(74,15,28,.55);
+  }
+  button.secondary {
+    background: #fff; color: var(--crimson-rose);
+    border: 1.5px solid var(--crimson-rose); box-shadow: none;
+  }
+  .slots-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+  .slot-btn {
+    padding: 12px 6px; border: 1.5px solid var(--border); border-radius: 12px;
+    text-align: center; font-size: 14px; font-weight: 500; background: #FDF7F9; color: var(--slate);
+  }
+  .slot-btn.selected {
+    border-color: transparent; background: var(--gradient-accent); color: var(--peony-veil); font-weight: 700;
+    box-shadow: 0 8px 18px -8px rgba(74,15,28,.5);
+  }
+  .suggest-box {
+    margin-top: 14px; padding: 12px; background: #FBEAF1;
+    border: 1px solid var(--dusty-mauve); border-radius: 12px; font-size: 14px;
+  }
+  .suggest-box b { color: var(--crimson-rose); }
+  .summary-list { font-size: 14px; line-height: 1.8; color: var(--slate); }
+  .summary-list b { color: var(--crimson-rose); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="page-bg"></div>
+<div class="mockup-badge">Mockup 18 · Velvet Burgundy / Peony Veil</div>
+<div class="wrap">
+  <h1>ระบบนัดหมายผู้บริหาร</h1>
+  <div class="sub">จันทร์–ศุกร์ เวลา 13:00–16:00 น. (นัดละ 30 นาที)</div>
+
+  <div class="card">
+    <div class="section">
+      <div class="step-title">1. รายละเอียดการนัดหมาย</div>
+      <label>ชื่อผู้ขอนัด *</label>
+      <input type="text" placeholder="เช่น คุณสมชาย">
+      <label>หัวข้อประชุม *</label>
+      <input type="text" placeholder="เช่น หารือแผนงานไตรมาส 3">
+      <label>ผู้บริหารที่ต้องการนัด *</label>
+      <div class="exec-options">
+        <div class="exec-chip selected">คุณกฤช</div>
+        <div class="exec-chip">คุณเบียร์</div>
+        <div class="exec-chip">ทั้งคู่</div>
+      </div>
+      <label>วันที่ต้องการนัด *</label>
+      <input type="date">
+      <button>ค้นหาเวลาว่าง</button>
+      <button class="secondary">← กลับไปแก้ไขข้อมูล</button>
+    </div>
+
+    <div class="section">
+      <div class="step-title">2. เลือกเวลาที่ว่าง</div>
+      <div class="slots-grid">
+        <div class="slot-btn">13:00-13:30</div>
+        <div class="slot-btn">13:30-14:00</div>
+        <div class="slot-btn selected">14:00-14:30</div>
+        <div class="slot-btn">14:30-15:00</div>
+        <div class="slot-btn">15:00-15:30</div>
+        <div class="slot-btn">15:30-16:00</div>
+      </div>
+      <div class="suggest-box"><b>วันที่ใกล้เคียงที่ว่าง:</b> วันพุธที่ 22 กรกฎาคม 2569</div>
+    </div>
+
+    <div class="section">
+      <div class="step-title">3. ยืนยันการนัดหมาย</div>
+      <div class="summary-list">
+        <div><b>ผู้บริหาร:</b> คุณกฤช</div>
+        <div><b>วันที่:</b> วันจันทร์ที่ 20 กรกฎาคม 2569</div>
+        <div><b>เวลา:</b> 14:00 - 14:30 น.</div>
+      </div>
+      <button>ยืนยันการนัดหมาย</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

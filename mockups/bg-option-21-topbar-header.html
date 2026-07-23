@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup 21 — Top Bar Header</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #2A0508; --slate: #6B4A4C; --slate-light: #9C8083;
+    --card-bg: #FFFFFF; --border: #F0DCDD;
+    --red-bright: #820816;
+    --red-mid: #5F0510;
+    --red-dark: #3B030A;
+    --red-deepest: #2B080B;
+    --gradient-accent: linear-gradient(135deg, #820816 0%, #5F0510 100%);
+    --page-bg: #FAF3F3;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: 'Prompt', 'Segoe UI', 'Sarabun', system-ui, sans-serif;
+    color: var(--ink); background: var(--page-bg); min-height: 100vh;
+  }
+
+  .mockup-badge {
+    position: fixed; top: 14px; right: 14px; z-index: 5;
+    background: rgba(43,8,11,.85); color: #fff; font-size: 12px; font-weight: 500;
+    padding: 6px 12px; border-radius: 999px; letter-spacing: .2px;
+  }
+
+  /* ===== Top bar (colorful header, matches the reference layout) ===== */
+  .topbar {
+    background: var(--gradient-accent);
+    padding: 20px 28px;
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    flex-wrap: wrap;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 14px; }
+  .topbar-icon {
+    width: 46px; height: 46px; border-radius: 12px;
+    background: rgba(255,255,255,.16); display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  .topbar-title { color: #fff; font-size: 21px; font-weight: 800; letter-spacing: .3px; margin: 0; }
+  .topbar-sub { color: rgba(255,255,255,.88); font-size: 13px; margin: 2px 0 10px; font-weight: 300; }
+  .topbar-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pill {
+    background: rgba(255,255,255,.16); color: #fff; font-size: 12px; font-weight: 500;
+    padding: 5px 12px; border-radius: 999px; display: inline-flex; align-items: center; gap: 5px;
+  }
+  .topbar-btn {
+    background: #fff; color: var(--red-bright); border: none; font-weight: 600; font-size: 13px;
+    padding: 10px 18px; border-radius: 10px; cursor: pointer; white-space: nowrap;
+    box-shadow: 0 4px 14px -4px rgba(0,0,0,.25);
+  }
+
+  /* ===== Tab bar ===== */
+  .tabbar {
+    background: #fff; display: flex; gap: 4px; padding: 0 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab {
+    padding: 16px 18px; font-size: 14px; font-weight: 600; color: var(--slate-light);
+    border-bottom: 2.5px solid transparent; cursor: pointer; display: flex; align-items: center; gap: 6px;
+  }
+  .tab.active { color: var(--red-bright); border-bottom-color: var(--red-bright); }
+
+  .content { max-width: 900px; margin: 0 auto; padding: 24px 20px 60px; }
+  .card {
+    position: relative; overflow: hidden; background: var(--card-bg);
+    border: 1px solid var(--border); border-radius: 18px; padding: 24px 20px 20px;
+    box-shadow: 0 18px 40px -18px rgba(43,8,11,.15), 0 1px 2px rgba(0,0,0,.05);
+    max-width: 640px; margin: 0 auto;
+  }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--gradient-accent); }
+  .section { padding-top: 22px; margin-top: 22px; border-top: 1px solid var(--border); }
+  .section:first-child { padding-top: 0; margin-top: 0; border-top: none; }
+  .step-title { font-weight: 600; font-size: 15px; margin-bottom: 14px; color: var(--red-bright); }
+  label { display: block; font-size: 13px; font-weight: 500; margin: 12px 0 6px; color: var(--slate); }
+  label:first-child { margin-top: 0; }
+  input[type=text], input[type=date] {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px;
+    font-size: 14px; font-family: inherit; background: #FDF8F8; color: var(--ink);
+  }
+  input[type=text]:focus, input[type=date]:focus {
+    outline: none; border-color: var(--red-bright);
+    box-shadow: 0 0 0 3px rgba(130,8,22,.16);
+  }
+  .exec-options { display: flex; gap: 10px; flex-wrap: wrap; }
+  .exec-chip {
+    flex: 1; min-width: 120px; border: 1.5px solid var(--border); border-radius: 12px; padding: 12px;
+    text-align: center; font-size: 14px; font-weight: 500; color: var(--slate); background: #FDF8F8;
+  }
+  .exec-chip.selected {
+    border-color: transparent; background: var(--gradient-accent); color: #FFFFFF; font-weight: 600;
+    box-shadow: 0 8px 18px -8px rgba(43,8,11,.55);
+  }
+  button.primary {
+    background: var(--gradient-accent); color: #FFFFFF; border: none; padding: 12px 20px; border-radius: 12px;
+    font-size: 15px; font-family: inherit; font-weight: 600; width: 100%; margin-top: 16px;
+    box-shadow: 0 10px 22px -10px rgba(43,8,11,.6); cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="mockup-badge">Mockup 21 · Top Bar Header</div>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-icon">🗓️</div>
+    <div>
+      <h1 class="topbar-title">ระบบนัดหมายผู้บริหาร</h1>
+      <div class="topbar-sub">จองคิวนัดหมายกับผู้บริหารเพื่อประชุมงาน</div>
+      <div class="topbar-pills">
+        <span class="pill">🕐 จันทร์–ศุกร์ 13:00–16:00 น.</span>
+        <span class="pill">👥 นัดได้ 1–2 ท่าน/ครั้ง</span>
+      </div>
+    </div>
+  </div>
+  <button class="topbar-btn">📖 คู่มือการใช้งาน</button>
+</header>
+
+<nav class="tabbar">
+  <div class="tab active">📋 นัดหมาย</div>
+  <div class="tab">📁 ดูคิว/ตารางนัด</div>
+  <div class="tab">📖 ข้อมูลผู้บริหาร</div>
+</nav>
+
+<div class="content">
+  <div class="card">
+    <div class="section">
+      <div class="step-title">1. รายละเอียดการนัดหมาย</div>
+      <label>ชื่อผู้ขอนัด *</label>
+      <input type="text" placeholder="เช่น คุณสมชาย">
+      <label>หัวข้อประชุม *</label>
+      <input type="text" placeholder="เช่น หารือแผนงานไตรมาส 3">
+      <label>ผู้บริหารที่ต้องการนัด *</label>
+      <div class="exec-options">
+        <div class="exec-chip selected">คุณกฤช</div>
+        <div class="exec-chip">คุณเบียร์</div>
+        <div class="exec-chip">ทั้งคู่</div>
+      </div>
+      <label>วันที่ต้องการนัด *</label>
+      <input type="date">
+      <button class="primary">ค้นหาเวลาว่าง</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

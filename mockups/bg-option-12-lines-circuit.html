@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup 12 — Circuit Traces + Flowing Light</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #14202B; --slate: #51606D; --slate-light: #8A98A5;
+    --card-bg: #FFFFFF; --border: #D6E0E8;
+    --silver: #C7D0D9; --silver-light: #EDF0F3;
+    --navy-deep: #0B1E36; --navy: #163257; --blue: #2C5C88; --blue-bright: #4E8FC0; --cyan: #7FD0E8;
+    --blue-tint: #EAF4F9;
+    --gradient-metal: linear-gradient(135deg, #C7D0D9 0%, #7FD0E8 35%, #4E8FC0 65%, #163257 100%);
+    --gradient-blue: linear-gradient(135deg, #7FD0E8 0%, #4E8FC0 45%, #2C5C88 100%);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: 'Prompt', 'Segoe UI', 'Sarabun', system-ui, sans-serif;
+    color: var(--ink); padding: 24px 16px 60px; min-height: 100vh; position: relative;
+    background-color: #0B1E36;
+    background-image:
+      radial-gradient(1100px 750px at 15% 10%, rgba(127,208,232,.28), transparent 60%),
+      radial-gradient(1100px 900px at 40% 92%, rgba(78,143,192,.35), transparent 60%),
+      linear-gradient(155deg, #0B1E36 0%, #163257 45%, #0E2440 100%);
+    background-size: 220% 220%, 220% 220%, 100% 100%;
+    background-repeat: no-repeat;
+    animation: silkDriftBlue 95s ease-in-out infinite alternate;
+  }
+  @keyframes silkDriftBlue {
+    0%   { background-position: 0% 10%,  40% 100%, 0 0; }
+    50%  { background-position: 25% 30%, 55% 75%,  0 0; }
+    100% { background-position: 15% 45%, 60% 90%,  0 0; }
+  }
+  .lines-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) { body, .pulse { animation: none !important; } }
+
+  .mockup-badge {
+    position: fixed; top: 14px; right: 14px; z-index: 5;
+    background: rgba(11,30,54,.8); color: #fff; font-size: 12px; font-weight: 500;
+    padding: 6px 12px; border-radius: 999px; letter-spacing: .2px;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; position: relative; z-index: 1; }
+  h1 {
+    font-size: 25px; font-weight: 700; margin: 0 0 4px; letter-spacing: .3px;
+    background: var(--gradient-blue); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .sub { color: rgba(237,240,243,.75); font-size: 14px; margin-bottom: 24px; font-weight: 300; }
+  .card {
+    position: relative; overflow: hidden; background: var(--card-bg);
+    border: 1px solid var(--border); border-radius: 18px; padding: 24px 20px 20px; margin-bottom: 16px;
+    box-shadow: 0 18px 40px -18px rgba(11,30,54,.55), 0 1px 2px rgba(0,0,0,.05);
+  }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--gradient-metal); }
+  .step-title { font-weight: 600; font-size: 15px; margin-bottom: 14px; color: var(--ink); }
+  label { display: block; font-size: 13px; font-weight: 500; margin: 12px 0 6px; color: var(--slate); }
+  label:first-child { margin-top: 0; }
+  input[type=text], input[type=date] {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px;
+    font-size: 14px; font-family: inherit; background: #F9FBFC; color: var(--ink);
+  }
+  .exec-options { display: flex; gap: 10px; flex-wrap: wrap; }
+  .exec-chip {
+    flex: 1; min-width: 120px; border: 1.5px solid var(--border); border-radius: 12px; padding: 12px;
+    text-align: center; font-size: 14px; font-weight: 500; color: var(--slate); background: #F9FBFC;
+  }
+  .exec-chip.selected { border-color: transparent; background: var(--gradient-blue); color: #fff; font-weight: 600; }
+  button {
+    background: var(--gradient-blue); color: #fff; border: none; padding: 12px 20px; border-radius: 12px;
+    font-size: 15px; font-family: inherit; font-weight: 600; width: 100%; margin-top: 16px;
+    box-shadow: 0 10px 22px -10px rgba(44,92,136,.6);
+  }
+</style>
+</head>
+<body>
+
+<svg class="lines-bg" viewBox="0 0 900 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs>
+    <filter id="glow" x="-150%" y="-150%" width="400%" height="400%">
+      <feGaussianBlur stdDeviation="2.2"/>
+    </filter>
+  </defs>
+
+  <g>
+      <path id="circuitTrace0" d="M180,0 L360,0 L360,60 L420,60 L420,-120" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1.2"/>
+      <path id="circuitTrace1" d="M420,600 L420,540 L240,540" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1.2"/>
+      <path id="circuitTrace2" d="M120,540 L240,540 L240,660" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1.2"/>
+      <path id="circuitTrace3" d="M240,180 L180,180 L180,60" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1.2"/>
+      <path id="circuitTrace4" d="M120,840 L300,840 L300,900 L120,900" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1.2"/>
+      <path id="circuitTrace5" d="M300,60 L300,180 L360,180 L360,360" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1.2"/>
+      <path id="circuitTrace6" d="M720,600 L720,660 L900,660" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1.2"/>
+      <path id="circuitTrace7" d="M840,120 L960,120 L960,300 L900,300 L900,420" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1.2"/>
+      <path id="circuitTrace8" d="M660,660 L840,660 L840,780 L660,780 L660,660" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1.2"/>
+      <path id="circuitTrace9" d="M660,840 L660,960 L540,960 L540,840" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1.2"/>
+      <path id="circuitTrace10" d="M840,660 L1020,660 L1020,600 L960,600 L960,780" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1.2"/>
+      <path id="circuitTrace11" d="M0,240 L0,360 L60,360" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1.2"/>
+      <path id="circuitTrace12" d="M420,180 L420,60 L300,60 L300,0" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1.2"/>
+      <path id="circuitTrace13" d="M120,180 L60,180 L60,120 L240,120 L240,300" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1.2"/>
+      <path id="circuitTrace14" d="M0,780 L0,600 L-60,600 L-60,540 L60,540" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1.2"/>
+      <path id="circuitTrace15" d="M780,840 L660,840 L660,960" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1.2"/>
+  </g>
+  <g>
+      <rect x="178.0" y="-2.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="358.8" y="-1.2" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="358.8" y="58.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="418.8" y="58.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="418.0" y="-122.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="418.0" y="598.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="418.8" y="538.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="238.0" y="538.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="118.0" y="538.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="238.8" y="538.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="238.0" y="658.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="238.0" y="178.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="178.8" y="178.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="178.0" y="58.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="118.0" y="838.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="298.8" y="838.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="298.8" y="898.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="118.0" y="898.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="298.0" y="58.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="298.8" y="178.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="358.8" y="178.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="358.0" y="358.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="718.0" y="598.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="718.8" y="658.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="898.0" y="658.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="838.0" y="118.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="958.8" y="118.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="958.8" y="298.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="898.8" y="298.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="898.0" y="418.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="658.0" y="658.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="838.8" y="658.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="838.8" y="778.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="658.8" y="778.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="658.0" y="658.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="658.0" y="838.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="658.8" y="958.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="538.8" y="958.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="538.0" y="838.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="838.0" y="658.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="1018.8" y="658.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="1018.8" y="598.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="958.8" y="598.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="958.0" y="778.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="-2.0" y="238.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="-1.2" y="358.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="58.0" y="358.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="418.0" y="178.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="418.8" y="58.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="298.8" y="58.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="298.0" y="-2.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="118.0" y="178.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="58.8" y="178.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="58.8" y="118.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="238.8" y="118.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="238.0" y="298.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="-2.0" y="778.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="-1.2" y="598.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="-61.2" y="598.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="-61.2" y="538.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="58.0" y="538.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="778.0" y="838.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+      <rect x="658.8" y="838.8" width="2.4" height="2.4" fill="rgba(255,255,255,.22)"/>
+      <rect x="658.0" y="958.0" width="4" height="4" fill="rgba(255,255,255,.22)"/>
+  </g>
+
+  <g filter="url(#glow)">
+    <circle r="4.0" fill="#EAF6FC">
+      <animateMotion dur="16s" begin="0s" repeatCount="indefinite"><mpath href="#circuitTrace0"/></animateMotion>
+    </circle>
+    <circle r="4.5" fill="#FFFFFF">
+      <animateMotion dur="20s" begin="3s" repeatCount="indefinite"><mpath href="#circuitTrace2"/></animateMotion>
+    </circle>
+    <circle r="5.0" fill="#EAF6FC">
+      <animateMotion dur="14s" begin="7s" repeatCount="indefinite"><mpath href="#circuitTrace4"/></animateMotion>
+    </circle>
+    <circle r="4.0" fill="#FFFFFF">
+      <animateMotion dur="19s" begin="1s" repeatCount="indefinite"><mpath href="#circuitTrace6"/></animateMotion>
+    </circle>
+    <circle r="4.5" fill="#EAF6FC">
+      <animateMotion dur="17s" begin="5s" repeatCount="indefinite"><mpath href="#circuitTrace8"/></animateMotion>
+    </circle>
+    <circle r="5.0" fill="#FFFFFF">
+      <animateMotion dur="22s" begin="10s" repeatCount="indefinite"><mpath href="#circuitTrace10"/></animateMotion>
+    </circle>
+    <circle r="4.0" fill="#EAF6FC">
+      <animateMotion dur="15s" begin="4s" repeatCount="indefinite"><mpath href="#circuitTrace12"/></animateMotion>
+    </circle>
+    <circle r="4.5" fill="#FFFFFF">
+      <animateMotion dur="21s" begin="13s" repeatCount="indefinite"><mpath href="#circuitTrace14"/></animateMotion>
+    </circle>
+  </g>
+</svg>
+
+<div class="mockup-badge">Mockup 12 · Circuit Traces + Flowing Light</div>
+<div class="wrap">
+  <h1>ระบบนัดหมายผู้บริหาร</h1>
+  <div class="sub">จันทร์–ศุกร์ เวลา 13:00–16:00 น. (นัดละ 30 นาที)</div>
+  <div class="card">
+    <div class="step-title">1. รายละเอียดการนัดหมาย</div>
+    <label>ชื่อผู้ขอนัด *</label>
+    <input type="text" placeholder="เช่น คุณสมชาย">
+    <label>หัวข้อประชุม *</label>
+    <input type="text" placeholder="เช่น หารือแผนงานไตรมาส 3">
+    <label>ผู้บริหารที่ต้องการนัด *</label>
+    <div class="exec-options">
+      <div class="exec-chip selected">คุณกฤช</div>
+      <div class="exec-chip">คุณเบียร์</div>
+      <div class="exec-chip">ทั้งคู่</div>
+    </div>
+    <label>วันที่ต้องการนัด *</label>
+    <input type="date">
+    <button>ค้นหาเวลาว่าง</button>
+  </div>
+</div>
+</body>
+</html>
