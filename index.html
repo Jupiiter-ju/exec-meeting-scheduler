@@ -688,6 +688,16 @@ Object.keys(REMEMBER_KEYS).forEach(id => {
   });
 });
 
+// ===== เติมชื่อผู้ขอนัดลงในผู้เข้าร่วมประชุมให้อัตโนมัติแบบเรียลไทม์ =====
+// หยุดเติมให้ทันทีที่ผู้ใช้แก้ไขช่องผู้เข้าร่วมเอง (เช่น เพิ่มชื่อคนอื่นต่อ) กันไปทับข้อมูลที่พิมพ์เอง
+let participantsAutoSynced = true;
+$('#participants').addEventListener('input', () => { participantsAutoSynced = false; });
+$('#callerName').addEventListener('input', () => {
+  if (participantsAutoSynced) {
+    $('#participants').value = $('#callerName').value;
+  }
+});
+
 // ===== จัดการนัดหมายเดิม (ยกเลิก / เลื่อนนัด) =====
 const bookingCard = $('#bookingCard'), manageCard = $('#manageCard');
 
@@ -846,6 +856,7 @@ function startReschedule(ev, dateIso, identity) {
   $('#callerEmail').readOnly = true;
   $('#topic').value = parsed.topic || ev.summary || '';
   $('#participants').value = parsed.participants;
+  participantsAutoSynced = false;
   $('#company').value = parsed.company;
   document.querySelectorAll('.exec-chip').forEach(c => c.classList.remove('selected'));
   state.executives = null;
@@ -864,6 +875,7 @@ $('#cancelRescheduleLink').addEventListener('click', () => {
   $('#callerEmail').value = '';
   $('#callerEmail').readOnly = false;
   $('#topic').value = '';
+  participantsAutoSynced = true;
   $('#rescheduleBanner').classList.add('hidden');
   hideResults();
 });
@@ -1075,6 +1087,7 @@ $('#btnNew').addEventListener('click', () => {
   $('#topic').value = '';
   $('#participants').value = '';
   $('#company').value = '';
+  participantsAutoSynced = true;
   resetCalendar();
   document.querySelectorAll('.exec-chip').forEach(c => c.classList.remove('selected'));
   state.executives = null;
