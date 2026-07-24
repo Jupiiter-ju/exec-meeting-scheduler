@@ -814,7 +814,7 @@ function renderMeetings(matches, identity) {
         rowStatusEl.textContent = '';
         rowStatusEl.className = 'status';
         try {
-          const res = await callWebhook({ action: 'cancel', date: dateIso, topic: ev.summary || '', callerName: identity.callerName, requesterEmail: identity.callerEmail });
+          const res = await callWebhook({ action: 'cancel', source: 'website', date: dateIso, topic: ev.summary || '', callerName: identity.callerName, requesterEmail: identity.callerEmail });
           if (res && res.success === false) throw new Error(res.error || 'ยกเลิกไม่สำเร็จ');
           row.innerHTML = '<div class="empty-msg" style="color:var(--green);">✅ ยกเลิกนัดหมายนี้เรียบร้อยแล้ว</div>';
         } catch (err) {
@@ -1042,6 +1042,7 @@ $('#btnConfirm').addEventListener('click', async () => {
       try {
         const cancelRes = await callWebhook({
           action: 'cancel',
+          source: 'website',
           date: state.reschedule.date,
           topic: state.reschedule.summary,
           callerName: state.reschedule.callerName,
