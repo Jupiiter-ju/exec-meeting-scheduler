@@ -292,6 +292,15 @@
   .package-toggle input { width: auto; margin: 0; }
   .package-toggle span { font-weight: 500; font-size: 13px; color: var(--dark-gray); }
   .batch-tag { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+
+  /* รายการวันที่หลายวัน — จัดคอลัมน์ (วัน/เลขที่/เดือน/ปี) ให้ตรงกันทุกแถว */
+  .date-row { display: flex; align-items: baseline; gap: 6px; font-size: 13px; line-height: 1.8; color: var(--dark-gray); }
+  .date-row .dr-prefix { flex: 0 0 auto; }
+  .date-row .dr-weekday { flex: 0 0 96px; }
+  .date-row .dr-day { flex: 0 0 20px; text-align: right; }
+  .date-row .dr-month { flex: 0 0 76px; }
+  .date-row .dr-year { flex: 0 0 40px; }
+  .date-row .dr-suffix { color: var(--red); flex: 1 1 auto; }
 </style>
 </head>
 <body>
@@ -764,6 +773,25 @@ function execLabel(execArr) {
 function formatDateTH(dateStr) {
   const d = new Date(dateStr + 'T00:00:00+07:00');
   return d.toLocaleDateString('th-TH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+// ===== แสดงรายการวันที่หลายๆ วัน (จองแบบชุด) ให้แต่ละคอลัมน์ (วัน/เลขที่/เดือน/ปี) ตรงกันทุกแถว =====
+const THAI_WEEKDAYS_FULL = ['วันอาทิตย์', 'วันจันทร์', 'วันอังคาร', 'วันพุธ', 'วันพฤหัสบดี', 'วันศุกร์', 'วันเสาร์'];
+function formatDateTHParts(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00+07:00');
+  return {
+    weekday: THAI_WEEKDAYS_FULL[d.getDay()] + 'ที่',
+    day: d.getDate(),
+    month: THAI_MONTHS[d.getMonth()],
+    year: d.getFullYear() + 543
+  };
+}
+function renderDateRow(dateStr, opts) {
+  opts = opts || {};
+  const p = formatDateTHParts(dateStr);
+  const prefix = opts.prefix ? `<span class="dr-prefix">${opts.prefix}</span>` : '';
+  const suffix = opts.suffix ? `<span class="dr-suffix">${opts.suffix}</span>` : '';
+  return `<div class="date-row">${prefix}<span class="dr-weekday">${p.weekday}</span><span class="dr-day">${p.day}</span><span class="dr-month">${p.month}</span><span class="dr-year">${p.year}</span>${suffix}</div>`;
 }
 
 // ===== โหมดตัวอย่าง: ใช้เมื่อยังไม่ได้ตั้งค่า WEBHOOK_URL จริง =====
@@ -1263,8 +1291,8 @@ function renderConfirmSummary() {
 function renderPackageConfirmSummary() {
   const execArr = execArray();
   const dates = state.packageDates;
-  const preview = dates.slice(0, 5).map(d => formatDateTH(d)).join('<br>');
-  const more = dates.length > 5 ? `<br>และอีก ${dates.length - 5} วัน` : '';
+  const preview = dates.slice(0, 5).map(d => renderDateRow(d)).join('');
+  const more = dates.length > 5 ? `<div style="margin-top:4px;">และอีก ${dates.length - 5} วัน</div>` : '';
   $('#confirmSummary').innerHTML = `
     <div><b>ผู้ขอนัด:</b> ${escapeHtml($('#callerName').value.trim())}</div>
     <div><b>อีเมลผู้ขอนัด:</b> ${escapeHtml($('#callerEmail').value.trim()) || '<span style="color:var(--muted);">ไม่ระบุ — จะไม่มีการส่งคำเชิญ</span>'}</div>
@@ -1274,7 +1302,7 @@ function renderPackageConfirmSummary() {
     <div><b>ผู้บริหาร:</b> ${execLabel(execArr)}</div>
     <div><b>เวลา:</b> ${escapeHtml(state.packageSlot.start)} น. (ทุกวันในชุด)</div>
     <div style="margin-top:8px;"><b>จำนวนวันทั้งหมด:</b> ${dates.length} วัน</div>
-    <div style="margin-top:4px;font-size:13px;">${preview}${more}</div>
+    <div style="margin-top:4px;">${preview}${more}</div>
   `;
   $('#btnConfirm').disabled = false;
   $('#confirmStatus').textContent = '';
@@ -1332,10 +1360,10 @@ function renderPackageDone(data, payload) {
   const booked = data.booked || [];
   const failed = data.failed || [];
   const bookedList = booked.length
-    ? booked.map(d => `<div>✅ ${formatDateTH(d)}</div>`).join('')
+    ? booked.map(d => renderDateRow(d, { prefix: '✅' })).join('')
     : '<div class="empty-msg">ไม่มีวันที่จองสำเร็จ</div>';
   const failedList = failed.length
-    ? `<div style="margin-top:8px;color:var(--red);"><b>วันที่จองไม่สำเร็จ (${failed.length}):</b>${failed.map(f => `<div>${formatDateTH(f.date)} — ${escapeHtml(f.reason || '')}</div>`).join('')}</div>`
+    ? `<div style="margin-top:8px;"><b style="color:var(--red);">วันที่จองไม่สำเร็จ (${failed.length}):</b>${failed.map(f => renderDateRow(f.date, { suffix: ' — ' + escapeHtml(f.reason || '') })).join('')}</div>`
     : '';
   $('#doneSummary').innerHTML = `
     <div><b>หัวข้อ:</b> ${escapeHtml(payload.topic)}</div>
