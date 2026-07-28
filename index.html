@@ -207,6 +207,9 @@
   }
   .cal-day:hover { background: var(--champagne-tint); }
   .cal-day.dim { color: #CFCFD2; pointer-events: none; }
+  /* วันที่ล้นไปเดือนถัดไป (ยังจางเหมือนเดิม) แต่กดเลือกได้เลยโดยไม่ต้องสลับเดือน */
+  .cal-day.dim.next-clickable { pointer-events: auto; cursor: pointer; }
+  .cal-day.dim.next-clickable:hover { background: var(--champagne-tint); }
   .cal-day.today { border-color: var(--pink-gold); color: var(--pink-gold-deep); font-weight: 600; }
   .cal-day.selected {
     background: var(--gradient-pink); color: #fff; font-weight: 700; border-color: transparent;
@@ -571,8 +574,23 @@ function createDatePicker(ids, opts) {
         el.textContent = prevMonthDays + dayOffset;
         el.classList.add('dim');
       } else if (dayOffset > daysInMonth) {
-        el.textContent = dayOffset - daysInMonth;
+        const nd = dayOffset - daysInMonth;
+        el.textContent = nd;
         el.classList.add('dim');
+        // วันที่ล้นไปเดือนถัดไป — เช็คเงื่อนไขเดียวกับวันปกติ (ไม่ใช่วันในอดีต/ไม่ตกวันหยุดถ้าจำกัด)
+        // ถ้าผ่าน ให้กดเลือกได้ทันทีโดยไม่ต้องกดลูกศรสลับเดือนก่อน (ยังคงหน้าตาจางเหมือนเดิม)
+        const nextCellDate = new Date(y, m + 1, nd);
+        const nextIso = `${nextCellDate.getFullYear()}-${pad2(nextCellDate.getMonth() + 1)}-${pad2(nextCellDate.getDate())}`;
+        const nextDow = nextCellDate.getDay();
+        if (nextIso >= todayIso && !(restrictWeekdays && (nextDow === 0 || nextDow === 6))) {
+          el.classList.add('next-clickable');
+          if (nextIso === calSelected) el.classList.add('selected');
+          el.addEventListener('click', () => {
+            calSelected = nextIso;
+            selectBtn.disabled = false;
+            render();
+          });
+        }
       } else {
         el.textContent = dayOffset;
         cellDate = new Date(y, m, dayOffset);
