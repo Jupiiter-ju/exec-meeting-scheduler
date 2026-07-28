@@ -271,6 +271,24 @@
   .btn-danger { background: #fff; color: var(--red); border: 1.5px solid var(--red); box-shadow: none; }
   .btn-danger:hover { background: #FBEBEA; transform: none; box-shadow: none; }
   .btn-danger-solid { background: var(--red); color: #fff; }
+
+  /* ===== จองแบบชุด (หลายวัน) ===== */
+  .day-options { display: flex; gap: 8px; flex-wrap: wrap; }
+  .day-chip {
+    flex: 1; min-width: 44px;
+    border: 1.5px solid var(--border); border-radius: 12px;
+    padding: 10px 4px; text-align: center; cursor: pointer;
+    font-size: 13px; font-weight: 500; color: var(--dark-gray);
+    background: #FAFAFA; user-select: none; transition: .2s;
+  }
+  .day-chip.selected {
+    border-color: var(--pink-gold); background: var(--champagne-tint); color: var(--pink-gold-deep);
+    font-weight: 600; box-shadow: 0 8px 18px -8px rgba(255,151,183,.4);
+  }
+  .package-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 16px 0 0; }
+  .package-toggle input { width: auto; margin: 0; }
+  .package-toggle span { font-weight: 500; font-size: 13px; color: var(--dark-gray); }
+  .batch-tag { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -363,19 +381,79 @@
         <div class="exec-chip" data-exec="both">คุณกฤช &amp; คุณเบียร์</div>
       </div>
 
-      <label>วันที่ต้องการนัด *</label>
-      <div class="date-field" id="dateField">
-        <input type="hidden" id="dateInput">
-        <div class="date-display placeholder" id="dateDisplay">แตะเพื่อเลือกวันที่</div>
-        <div class="cal-pop hidden" id="calPop">
-          <div class="cal-head">
-            <div class="cal-nav" id="calPrev">‹</div>
-            <div class="cal-title" id="calTitle"></div>
-            <div class="cal-nav" id="calNext">›</div>
+      <label class="package-toggle" id="packageToggleRow">
+        <input type="checkbox" id="isPackage">
+        <span>จองแบบชุด (เลือกช่วงวันที่ + วันในสัปดาห์ ทำซ้ำหลายนัดพร้อมกัน)</span>
+      </label>
+
+      <div id="singleDateSection">
+        <label>วันที่ต้องการนัด *</label>
+        <div class="date-field" id="dateField">
+          <input type="hidden" id="dateInput">
+          <div class="date-display placeholder" id="dateDisplay">แตะเพื่อเลือกวันที่</div>
+          <div class="cal-pop hidden" id="calPop">
+            <div class="cal-head">
+              <div class="cal-nav" id="calPrev">‹</div>
+              <div class="cal-title" id="calTitle"></div>
+              <div class="cal-nav" id="calNext">›</div>
+            </div>
+            <div class="cal-grid" id="calGrid"></div>
+            <button class="cal-select-btn" id="calSelect" disabled>เลือก</button>
           </div>
-          <div class="cal-grid" id="calGrid"></div>
-          <button class="cal-select-btn" id="calSelect" disabled>เลือก</button>
         </div>
+      </div>
+
+      <div id="packageDateSection" class="hidden">
+        <label>วันเริ่มต้น *</label>
+        <div class="date-field" id="pStartDateField">
+          <input type="hidden" id="pStartDateInput">
+          <div class="date-display placeholder" id="pStartDateDisplay">แตะเพื่อเลือกวันที่</div>
+          <div class="cal-pop hidden" id="pStartCalPop">
+            <div class="cal-head">
+              <div class="cal-nav" id="pStartCalPrev">‹</div>
+              <div class="cal-title" id="pStartCalTitle"></div>
+              <div class="cal-nav" id="pStartCalNext">›</div>
+            </div>
+            <div class="cal-grid" id="pStartCalGrid"></div>
+            <button class="cal-select-btn" id="pStartCalSelect" disabled>เลือก</button>
+          </div>
+        </div>
+
+        <label>วันสิ้นสุด *</label>
+        <div class="date-field" id="pEndDateField">
+          <input type="hidden" id="pEndDateInput">
+          <div class="date-display placeholder" id="pEndDateDisplay">แตะเพื่อเลือกวันที่</div>
+          <div class="cal-pop hidden" id="pEndCalPop">
+            <div class="cal-head">
+              <div class="cal-nav" id="pEndCalPrev">‹</div>
+              <div class="cal-title" id="pEndCalTitle"></div>
+              <div class="cal-nav" id="pEndCalNext">›</div>
+            </div>
+            <div class="cal-grid" id="pEndCalGrid"></div>
+            <button class="cal-select-btn" id="pEndCalSelect" disabled>เลือก</button>
+          </div>
+        </div>
+
+        <label>ทำซ้ำในวัน *</label>
+        <div class="day-options">
+          <div class="day-chip selected" data-day="1">จันทร์</div>
+          <div class="day-chip selected" data-day="2">อังคาร</div>
+          <div class="day-chip selected" data-day="3">พุธ</div>
+          <div class="day-chip selected" data-day="4">พฤหัสบดี</div>
+          <div class="day-chip selected" data-day="5">ศุกร์</div>
+        </div>
+
+        <label>เวลา *</label>
+        <select id="pSlotSelect">
+          <option value="">-- เลือกเวลา --</option>
+          <option value="13:00">13:00 - 13:30 น.</option>
+          <option value="13:30">13:30 - 14:00 น.</option>
+          <option value="14:00">14:00 - 14:30 น.</option>
+          <option value="14:30">14:30 - 15:00 น.</option>
+          <option value="15:00">15:00 - 15:30 น.</option>
+          <option value="15:30">15:30 - 16:00 น.</option>
+        </select>
+        <div id="packagePreview" style="font-size:12px;color:var(--muted);margin-top:6px;"></div>
       </div>
 
       <button id="btnCheck">ค้นหาเวลาว่าง</button>
@@ -416,7 +494,10 @@ const state = {
   executives: null, // 'exe' | 'combo' | 'both'
   date: null,
   selectedSlot: null,
-  reschedule: null // { date, summary, callerName, callerEmail } ของนัดเดิม เมื่ออยู่ในโหมดเลื่อนนัด
+  reschedule: null, // { date, summary, callerName, callerEmail } ของนัดเดิม เมื่ออยู่ในโหมดเลื่อนนัด
+  isPackage: false,
+  packageDates: [],
+  packageSlot: null
 };
 
 const $ = sel => document.querySelector(sel);
@@ -571,6 +652,71 @@ const bookingDatePicker = createDatePicker({
 }, { restrictWeekdays: true });
 function resetCalendar() { bookingDatePicker.reset(); }
 
+// ===== จองแบบชุด: ปฏิทินวันเริ่ม/วันสิ้นสุด + เลือกวันในสัปดาห์ =====
+const pStartDateInput = $('#pStartDateInput');
+const packageStartPicker = createDatePicker({
+  field: '#pStartDateField', input: '#pStartDateInput', display: '#pStartDateDisplay',
+  pop: '#pStartCalPop', title: '#pStartCalTitle', grid: '#pStartCalGrid',
+  select: '#pStartCalSelect', prev: '#pStartCalPrev', next: '#pStartCalNext'
+}, { restrictWeekdays: true });
+pStartDateInput.addEventListener('change', () => { hideResults(); updatePackagePreview(); });
+
+const pEndDateInput = $('#pEndDateInput');
+const packageEndPicker = createDatePicker({
+  field: '#pEndDateField', input: '#pEndDateInput', display: '#pEndDateDisplay',
+  pop: '#pEndCalPop', title: '#pEndCalTitle', grid: '#pEndCalGrid',
+  select: '#pEndCalSelect', prev: '#pEndCalPrev', next: '#pEndCalNext'
+}, { restrictWeekdays: true });
+pEndDateInput.addEventListener('change', () => { hideResults(); updatePackagePreview(); });
+
+$('#pSlotSelect').addEventListener('change', () => { hideResults(); updatePackagePreview(); });
+
+document.querySelectorAll('.day-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    chip.classList.toggle('selected');
+    hideResults();
+    updatePackagePreview();
+  });
+});
+
+function selectedWeekdays() {
+  return Array.from(document.querySelectorAll('.day-chip.selected')).map(c => Number(c.dataset.day));
+}
+
+// นับวันที่ตรงเงื่อนไขทั้งหมดในช่วง [startIso, endIso] ตามวันในสัปดาห์ที่เลือก (ตัดวันที่ผ่านมาแล้วออก)
+function computePackageDates(startIso, endIso, allowedDows) {
+  if (!startIso || !endIso || endIso < startIso) return [];
+  const out = [];
+  let cur = new Date(startIso + 'T00:00:00+07:00');
+  const end = new Date(endIso + 'T00:00:00+07:00');
+  while (cur <= end && out.length <= 60) {
+    const iso = `${cur.getFullYear()}-${pad2(cur.getMonth() + 1)}-${pad2(cur.getDate())}`;
+    if (iso >= todayIso && allowedDows.includes(cur.getDay())) out.push(iso);
+    cur.setDate(cur.getDate() + 1);
+  }
+  return out;
+}
+
+function updatePackagePreview() {
+  const el = $('#packagePreview');
+  if (!state.isPackage) { el.textContent = ''; return; }
+  const startIso = pStartDateInput.value;
+  const endIso = pEndDateInput.value;
+  const dows = selectedWeekdays();
+  if (!startIso || !endIso || !dows.length) { el.textContent = ''; return; }
+  const dates = computePackageDates(startIso, endIso, dows);
+  if (!dates.length) { el.textContent = 'ไม่มีวันที่ตรงเงื่อนไขในช่วงที่เลือก'; return; }
+  el.textContent = `จะจองทั้งหมด ${dates.length} วัน (${formatDateTH(dates[0])} ถึง ${formatDateTH(dates[dates.length - 1])})`;
+}
+
+$('#isPackage').addEventListener('change', (e) => {
+  state.isPackage = e.target.checked;
+  $('#singleDateSection').classList.toggle('hidden', state.isPackage);
+  $('#packageDateSection').classList.toggle('hidden', !state.isPackage);
+  hideResults();
+  updatePackagePreview();
+});
+
 const mDateInput = $('#mDateInput');
 const manageDatePicker = createDatePicker({
   field: '#mDateField', input: '#mDateInput', display: '#mDateDisplay',
@@ -627,10 +773,17 @@ function mockWebhook(payload) {
         resolve({ success: true, message: 'จองสำเร็จ (ตัวอย่าง)', eventId: 'demo-event-id', eventLink: '#' });
       } else if (payload.action === 'find_meeting') {
         resolve({ success: true, matches: [
-          { eventId: 'demo-1', calendarId: 'demo-cal', summary: `ตัวอย่าง : ${payload.topic || 'นัดหมายตัวอย่าง'} ${payload.callerName || ''}`.trim(), start: `${payload.date || todayIso}T14:00:00+07:00`, end: `${payload.date || todayIso}T14:30:00+07:00` }
+          { eventId: 'demo-1', calendarId: 'demo-cal', summary: `ตัวอย่าง : ${payload.topic || 'นัดหมายตัวอย่าง'} ${payload.callerName || ''}`.trim(), description: 'รหัสชุดนัดหมาย: REC-DEMO123', start: `${payload.date || todayIso}T14:00:00+07:00`, end: `${payload.date || todayIso}T14:30:00+07:00` }
         ] });
       } else if (payload.action === 'cancel') {
         resolve({ success: true, message: `ยกเลิกนัดหมายเรียบร้อยแล้ว (ตัวอย่าง): ${payload.topic || ''}` });
+      } else if (payload.action === 'book_multi') {
+        const dates = payload.dates || [];
+        const failed = dates.filter((_, i) => i % 3 === 1).map(d => ({ date: d, reason: 'มีนัดหมายอื่นอยู่แล้ว (ตัวอย่าง)' }));
+        const booked = dates.filter(d => !failed.some(f => f.date === d));
+        resolve({ success: true, batchId: 'REC-DEMO' + Date.now().toString(36).toUpperCase(), totalRequested: dates.length, booked, failed });
+      } else if (payload.action === 'cancel_batch') {
+        resolve({ success: true, message: 'ยกเลิกนัดหมายทั้งชุดเรียบร้อยแล้ว (ตัวอย่าง)', batchId: payload.batchId, deletedCount: 3, deletedDates: [] });
       } else {
         resolve({ success: false, error: 'ไม่รู้จัก action นี้' });
       }
@@ -761,6 +914,13 @@ $('#btnSearch').addEventListener('click', async () => {
   }
 });
 
+// นัดที่จองแบบชุดจะมีบรรทัด "รหัสชุดนัดหมาย: <batchId>" อยู่ใน description
+// ฝั่ง find_meeting ไม่ได้ส่ง batchId มาเป็นฟิลด์แยก ต้องแกะจาก description เอง
+function parseBatchId(desc) {
+  const m = (desc || '').match(/รหัสชุดนัดหมาย:\s*(\S+)/);
+  return m ? m[1] : null;
+}
+
 function renderMeetings(matches, identity) {
   $('#mStep1').classList.add('hidden');
   $('#mStep2').classList.remove('hidden');
@@ -778,16 +938,22 @@ function renderMeetings(matches, identity) {
     .forEach(ev => {
       const dateIso = (ev.start || '').slice(0, 10);
       const timeStr = (ev.start || '').length >= 16 ? `${escapeHtml((ev.start || '').slice(11, 16))} - ${escapeHtml((ev.end || '').slice(11, 16))} น.` : '';
+      const batchId = parseBatchId(ev.description);
       const row = document.createElement('div');
       row.className = 'meeting-row';
       row.innerHTML = `
         <div class="meeting-date">${formatDateTH(dateIso)}</div>
         ${timeStr ? `<div class="meeting-time">${timeStr}</div>` : ''}
         <div class="meeting-summary">${escapeHtml(ev.summary || '')}</div>
+        ${batchId ? `<div class="batch-tag">🔁 นัดนี้เป็นส่วนหนึ่งของการจองแบบชุด</div>` : ''}
         <div class="meeting-actions row">
           <button class="secondary btn-reschedule">เลื่อนนัด</button>
-          <button class="btn-danger btn-cancel-meeting">ยกเลิกนัด</button>
+          <button class="btn-danger btn-cancel-meeting">ยกเลิกนัดนี้</button>
         </div>
+        ${batchId ? `
+        <div class="row batch-actions-row" style="margin-top:8px;">
+          <button class="btn-danger btn-cancel-batch">ยกเลิกทั้งชุด</button>
+        </div>` : ''}
         <div class="confirm-cancel hidden" style="margin-top:10px;">
           <div style="font-size:13px;margin-bottom:8px;">ยืนยันยกเลิกนัดนี้ใช่หรือไม่?</div>
           <div class="row">
@@ -796,15 +962,26 @@ function renderMeetings(matches, identity) {
           </div>
           <div class="status"></div>
         </div>
+        ${batchId ? `
+        <div class="confirm-cancel-batch hidden" style="margin-top:10px;">
+          <div style="font-size:13px;margin-bottom:8px;">⚠️ ยืนยันยกเลิก<b>ทั้งชุด</b>ใช่หรือไม่? ทุกนัดในชุดนี้ (รหัส ${escapeHtml(batchId)}) จะถูกยกเลิกทั้งหมด</div>
+          <div class="row">
+            <button class="btn-danger-solid btn-confirm-cancel-batch">ใช่ ยกเลิกทั้งชุด</button>
+            <button class="secondary btn-abort-cancel-batch">ไม่ใช่</button>
+          </div>
+          <div class="status"></div>
+        </div>` : ''}
       `;
       row.querySelector('.btn-reschedule').addEventListener('click', () => startReschedule(ev, dateIso, identity));
       row.querySelector('.btn-cancel-meeting').addEventListener('click', () => {
         row.querySelector('.meeting-actions').classList.add('hidden');
+        if (batchId) row.querySelector('.batch-actions-row').classList.add('hidden');
         row.querySelector('.confirm-cancel').classList.remove('hidden');
       });
       row.querySelector('.btn-abort-cancel').addEventListener('click', () => {
         row.querySelector('.confirm-cancel').classList.add('hidden');
         row.querySelector('.meeting-actions').classList.remove('hidden');
+        if (batchId) row.querySelector('.batch-actions-row').classList.remove('hidden');
       });
       row.querySelector('.btn-confirm-cancel').addEventListener('click', async () => {
         const confirmBtn = row.querySelector('.btn-confirm-cancel');
@@ -824,6 +1001,43 @@ function renderMeetings(matches, identity) {
           confirmBtn.textContent = 'ใช่ ยกเลิกนัด';
         }
       });
+
+      if (batchId) {
+        const batchBtn = row.querySelector('.btn-cancel-batch');
+        const batchConfirmBlock = row.querySelector('.confirm-cancel-batch');
+        batchBtn.addEventListener('click', () => {
+          row.querySelector('.meeting-actions').classList.add('hidden');
+          row.querySelector('.batch-actions-row').classList.add('hidden');
+          batchConfirmBlock.classList.remove('hidden');
+        });
+        batchConfirmBlock.querySelector('.btn-abort-cancel-batch').addEventListener('click', () => {
+          batchConfirmBlock.classList.add('hidden');
+          row.querySelector('.meeting-actions').classList.remove('hidden');
+          row.querySelector('.batch-actions-row').classList.remove('hidden');
+        });
+        batchConfirmBlock.querySelector('.btn-confirm-cancel-batch').addEventListener('click', async () => {
+          const confirmBtn = batchConfirmBlock.querySelector('.btn-confirm-cancel-batch');
+          const rowStatusEl = batchConfirmBlock.querySelector('.status');
+          confirmBtn.disabled = true;
+          confirmBtn.innerHTML = 'กำลังยกเลิกทั้งชุด...<span class="spinner"></span>';
+          rowStatusEl.textContent = '';
+          rowStatusEl.className = 'status';
+          try {
+            const res = await callWebhook({ action: 'cancel_batch', batchId });
+            if (res && res.success === false) throw new Error(res.error || 'ยกเลิกทั้งชุดไม่สำเร็จ');
+            $('#searchStatus').textContent = res.message || `ยกเลิกนัดหมายทั้งชุดเรียบร้อยแล้ว (${res.deletedCount || ''} รายการ)`;
+            $('#searchStatus').className = 'status success';
+            // นัดอื่นในชุดเดียวกันอาจถูกลบไปด้วย รีเฟรชผลค้นหาใหม่ทั้งหมด
+            $('#btnSearch').click();
+          } catch (err) {
+            rowStatusEl.textContent = err.message;
+            rowStatusEl.className = 'status error';
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'ใช่ ยกเลิกทั้งชุด';
+          }
+        });
+      }
+
       list.appendChild(row);
     });
 }
@@ -847,6 +1061,13 @@ function startReschedule(ev, dateIso, identity) {
   showBookingCard();
   showStep(1);
   hideResults();
+
+  // เลื่อนนัดใช้ได้เฉพาะนัดเดี่ยว ปิดโหมด "จองแบบชุด" ระหว่างนี้ไว้ก่อน
+  state.isPackage = false;
+  $('#isPackage').checked = false;
+  $('#isPackage').disabled = true;
+  $('#singleDateSection').classList.remove('hidden');
+  $('#packageDateSection').classList.add('hidden');
 
   const parsed = parseEventDescription(ev.description);
 
@@ -877,6 +1098,7 @@ $('#cancelRescheduleLink').addEventListener('click', () => {
   $('#topic').value = '';
   participantsAutoSynced = true;
   $('#rescheduleBanner').classList.add('hidden');
+  $('#isPackage').disabled = false;
   hideResults();
 });
 
@@ -897,6 +1119,30 @@ $('#btnCheck').addEventListener('click', async () => {
   if (callerEmail && !EMAIL_RE.test(callerEmail)) { statusEl.textContent = 'รูปแบบอีเมลผู้ขอนัดไม่ถูกต้อง'; statusEl.className = 'status error'; return; }
   if (!company) { statusEl.textContent = 'กรุณากรอกบริษัท/โปรเจคของผู้ขอนัด'; statusEl.className = 'status error'; return; }
   if (!state.executives) { statusEl.textContent = 'กรุณาเลือกผู้บริหารที่ต้องการนัด'; statusEl.className = 'status error'; return; }
+
+  if (state.isPackage) {
+    const startIso = pStartDateInput.value;
+    const endIso = pEndDateInput.value;
+    const dows = selectedWeekdays();
+    const slot = $('#pSlotSelect').value;
+
+    if (!startIso || !endIso) { statusEl.textContent = 'กรุณาเลือกวันเริ่มต้นและวันสิ้นสุด'; statusEl.className = 'status error'; return; }
+    if (endIso < startIso) { statusEl.textContent = 'วันสิ้นสุดต้องไม่ก่อนวันเริ่มต้น'; statusEl.className = 'status error'; return; }
+    if (!dows.length) { statusEl.textContent = 'กรุณาเลือกวันในสัปดาห์อย่างน้อย 1 วัน'; statusEl.className = 'status error'; return; }
+    if (!slot) { statusEl.textContent = 'กรุณาเลือกเวลา'; statusEl.className = 'status error'; return; }
+
+    const dates = computePackageDates(startIso, endIso, dows);
+    if (!dates.length) { statusEl.textContent = 'ไม่มีวันที่ตรงเงื่อนไขในช่วงที่เลือก'; statusEl.className = 'status error'; return; }
+    if (dates.length > 60) { statusEl.textContent = 'เลือกได้ไม่เกิน 60 วันต่อการจอง 1 ชุด กรุณาย่อช่วงวันที่ลง'; statusEl.className = 'status error'; return; }
+
+    state.packageDates = dates;
+    state.packageSlot = { start: slot };
+    renderPackageConfirmSummary();
+    stepEls[3].classList.remove('hidden');
+    setTimeout(() => stepEls[3].scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    return;
+  }
+
   if (!date) { statusEl.textContent = 'กรุณาเลือกวันที่'; statusEl.className = 'status error'; return; }
 
   const dow = new Date(date + 'T00:00:00+07:00').getDay();
@@ -996,14 +1242,100 @@ function renderConfirmSummary() {
   $('#confirmStatus').className = 'status';
 }
 
+function renderPackageConfirmSummary() {
+  const execArr = execArray();
+  const dates = state.packageDates;
+  const preview = dates.slice(0, 5).map(d => formatDateTH(d)).join('<br>');
+  const more = dates.length > 5 ? `<br>และอีก ${dates.length - 5} วัน` : '';
+  $('#confirmSummary').innerHTML = `
+    <div><b>ผู้ขอนัด:</b> ${escapeHtml($('#callerName').value.trim())}</div>
+    <div><b>อีเมลผู้ขอนัด:</b> ${escapeHtml($('#callerEmail').value.trim()) || '<span style="color:var(--muted);">ไม่ระบุ — จะไม่มีการส่งคำเชิญ</span>'}</div>
+    <div><b>หัวข้อ:</b> ${escapeHtml($('#topic').value.trim())}</div>
+    <div><b>ผู้เข้าร่วม:</b> ${escapeHtml($('#participants').value.trim()) || '-'}</div>
+    <div><b>บริษัท/โปรเจค:</b> ${escapeHtml($('#company').value.trim()) || '-'}</div>
+    <div><b>ผู้บริหาร:</b> ${execLabel(execArr)}</div>
+    <div><b>เวลา:</b> ${escapeHtml(state.packageSlot.start)} น. (ทุกวันในชุด)</div>
+    <div style="margin-top:8px;"><b>จำนวนวันทั้งหมด:</b> ${dates.length} วัน</div>
+    <div style="margin-top:4px;font-size:13px;">${preview}${more}</div>
+  `;
+  $('#btnConfirm').disabled = false;
+  $('#confirmStatus').textContent = '';
+  $('#confirmStatus').className = 'status';
+}
+
 function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
 }
 
+// ===== STEP 3 -> STEP 4 (BOOK แบบชุด) =====
+async function confirmPackageBooking() {
+  const statusEl = $('#confirmStatus');
+  const btn = $('#btnConfirm');
+  btn.disabled = true;
+  btn.innerHTML = 'กำลังจองแบบชุด...<span class="spinner"></span>';
+  statusEl.textContent = '';
+  statusEl.className = 'status';
+
+  const payload = {
+    action: 'book_multi',
+    source: 'website',
+    dates: state.packageDates,
+    start: state.packageSlot.start,
+    executives: execArray(),
+    callerName: $('#callerName').value.trim(),
+    requesterEmail: $('#callerEmail').value.trim(),
+    topic: $('#topic').value.trim(),
+    participants: $('#participants').value.trim(),
+    company: $('#company').value.trim()
+  };
+
+  try {
+    const data = await callWebhook(payload);
+    if (data && data.success === false) {
+      statusEl.textContent = data.error || 'จองแบบชุดไม่สำเร็จ';
+      statusEl.className = 'status error';
+      return;
+    }
+    renderPackageDone(data, payload);
+    showStep(4);
+  } catch (err) {
+    statusEl.textContent = err.message;
+    statusEl.className = 'status error';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'ยืนยันการนัดหมาย';
+  }
+}
+
+function renderPackageDone(data, payload) {
+  $('#doneTitle').textContent = 'จองแบบชุดสำเร็จ';
+  const booked = data.booked || [];
+  const failed = data.failed || [];
+  const bookedList = booked.length
+    ? booked.map(d => `<div>✅ ${formatDateTH(d)}</div>`).join('')
+    : '<div class="empty-msg">ไม่มีวันที่จองสำเร็จ</div>';
+  const failedList = failed.length
+    ? `<div style="margin-top:8px;color:var(--red);"><b>วันที่จองไม่สำเร็จ (${failed.length}):</b>${failed.map(f => `<div>${formatDateTH(f.date)} — ${escapeHtml(f.reason || '')}</div>`).join('')}</div>`
+    : '';
+  $('#doneSummary').innerHTML = `
+    <div><b>หัวข้อ:</b> ${escapeHtml(payload.topic)}</div>
+    <div><b>ผู้บริหาร:</b> ${execLabel(execArray())}</div>
+    <div><b>เวลา:</b> ${escapeHtml(payload.start)} น.</div>
+    <div style="margin-top:8px;"><b>จองสำเร็จ ${booked.length}/${payload.dates.length} วัน:</b></div>
+    <div style="font-size:13px;">${bookedList}</div>
+    ${failedList}
+    <div style="margin-top:10px;padding:10px;background:var(--champagne-tint);border-radius:10px;font-size:13px;">
+      <b>รหัสชุดนัดหมาย:</b> ${escapeHtml(data.batchId || '-')}<br>
+      เก็บรหัสนี้ไว้อ้างอิง หรือใช้แท็บ "ยกเลิก/เลื่อนนัดหมาย" เพื่อยกเลิกทั้งชุดในภายหลังได้เลย (ระบบค้นหาให้อัตโนมัติ)
+    </div>
+  `;
+}
+
 // ===== STEP 3 -> STEP 4 (BOOK) =====
 $('#btnConfirm').addEventListener('click', async () => {
+  if (state.isPackage) { await confirmPackageBooking(); return; }
   const statusEl = $('#confirmStatus');
   const btn = $('#btnConfirm');
   btn.disabled = true;
@@ -1096,6 +1428,20 @@ $('#btnNew').addEventListener('click', () => {
   state.selectedSlot = null;
   state.reschedule = null;
   $('#rescheduleBanner').classList.add('hidden');
+
+  $('#isPackage').checked = false;
+  $('#isPackage').disabled = false;
+  state.isPackage = false;
+  state.packageDates = [];
+  state.packageSlot = null;
+  $('#singleDateSection').classList.remove('hidden');
+  $('#packageDateSection').classList.add('hidden');
+  packageStartPicker.reset();
+  packageEndPicker.reset();
+  document.querySelectorAll('.day-chip').forEach(c => c.classList.add('selected'));
+  $('#pSlotSelect').value = '';
+  $('#packagePreview').textContent = '';
+
   showStep(1);
 });
 </script>
