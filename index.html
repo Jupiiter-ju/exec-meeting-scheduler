@@ -1370,10 +1370,6 @@ function renderPackageDone(data, payload) {
     <div style="margin-top:20px;"><b>จองสำเร็จ ${booked.length}/${payload.dates.length} วัน:</b></div>
     <div style="font-size:13px;margin-top:6px;">${bookedList}</div>
     ${failedList}
-    <div style="margin-top:20px;padding:10px;background:var(--champagne-tint);border-radius:10px;font-size:13px;">
-      <b>รหัสชุดนัดหมาย:</b> ${escapeHtml(data.batchId || '-')}<br>
-      เก็บรหัสนี้ไว้อ้างอิง หรือใช้แท็บ "ยกเลิก/เลื่อนนัดหมาย" เพื่อยกเลิกทั้งชุดในภายหลังได้เลย (ระบบค้นหาให้อัตโนมัติ)
-    </div>
   `;
 }
 
