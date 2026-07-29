@@ -67,8 +67,7 @@
      so the expanding sections get a divider line to separate them */
   #step2, #step3 { padding-top: 22px; margin-top: 22px; border-top: 1px solid var(--border); }
   .step-title { font-weight: 600; font-size: 15px; margin-bottom: 14px; color: var(--charcoal); letter-spacing: .2px; }
-  label { display: block; font-size: 13px; font-weight: 500; margin: 12px 0 6px; color: var(--dark-gray); }
-  label:first-child { margin-top: 0; }
+  label { display: block; font-size: 13px; font-weight: 500; margin: 24px 0 8px; color: var(--dark-gray); }
   input[type=text], input[type=date], textarea, select {
     width: 100%;
     padding: 10px 12px;
@@ -287,7 +286,7 @@
     border-color: var(--pink-gold); background: var(--champagne-tint); color: var(--pink-gold-deep);
     font-weight: 600; box-shadow: 0 8px 18px -8px rgba(255,151,183,.4);
   }
-  .package-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 16px 0 0; }
+  .package-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 24px 0 0; }
   .package-toggle input { width: auto; margin: 0; }
   .package-toggle span { font-weight: 500; font-size: 13px; color: var(--dark-gray); }
   .batch-tag { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
@@ -374,7 +373,7 @@
 
       <label>อีเมลผู้ขอนัด (หากต้องการรับคำเชิญทางอีเมล หรือลงนัดหมายใน Calendar)</label>
       <input type="text" id="callerEmail" placeholder="เช่น meeting@gmail.com">
-      <div style="font-size:12px;color:var(--muted);margin-top:4px;">ระบบจะส่งคำเชิญยืนยันนัดหมายผ่าน Google Calendar ให้ (เฉพาะผู้ขอนัด ไม่ส่งถึงผู้บริหาร)</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:6px;">ระบบจะส่งคำเชิญยืนยันนัดหมายผ่าน Google Calendar ให้ (เฉพาะผู้ขอนัด ไม่ส่งถึงผู้บริหาร)</div>
 
       <label>หัวข้อประชุม *</label>
       <input type="text" id="topic" placeholder="เช่น Action Plan Q4">
@@ -1300,8 +1299,8 @@ function renderPackageConfirmSummary() {
     <div><b>บริษัท/โปรเจค:</b> ${escapeHtml($('#company').value.trim()) || '-'}</div>
     <div><b>ผู้บริหาร:</b> ${execLabel(execArr)}</div>
     <div><b>เวลา:</b> ${escapeHtml(state.packageSlot.start)} น. (ทุกวันในชุด)</div>
-    <div style="margin-top:8px;"><b>จำนวนวันทั้งหมด:</b> ${dates.length} วัน</div>
-    <div style="margin-top:4px;">${preview}${more}</div>
+    <div style="margin-top:20px;"><b>จำนวนวันทั้งหมด:</b> ${dates.length} วัน</div>
+    <div style="margin-top:6px;">${preview}${more}</div>
   `;
   $('#btnConfirm').disabled = false;
   $('#confirmStatus').textContent = '';
@@ -1362,16 +1361,16 @@ function renderPackageDone(data, payload) {
     ? booked.map(d => renderDateRow(d, { prefix: '✅' })).join('')
     : '<div class="empty-msg">ไม่มีวันที่จองสำเร็จ</div>';
   const failedList = failed.length
-    ? `<div style="margin-top:8px;"><b style="color:var(--red);">วันที่จองไม่สำเร็จ (${failed.length}):</b>${failed.map(f => renderDateRow(f.date, { suffix: ' — ' + escapeHtml(f.reason || '') })).join('')}</div>`
+    ? `<div style="margin-top:20px;"><b style="color:var(--red);">วันที่จองไม่สำเร็จ (${failed.length}):</b><div style="margin-top:6px;">${failed.map(f => renderDateRow(f.date, { suffix: ' — ' + escapeHtml(f.reason || '') })).join('')}</div></div>`
     : '';
   $('#doneSummary').innerHTML = `
     <div><b>หัวข้อ:</b> ${escapeHtml(payload.topic)}</div>
     <div><b>ผู้บริหาร:</b> ${execLabel(execArray())}</div>
     <div><b>เวลา:</b> ${escapeHtml(payload.start)} น.</div>
-    <div style="margin-top:8px;"><b>จองสำเร็จ ${booked.length}/${payload.dates.length} วัน:</b></div>
-    <div style="font-size:13px;">${bookedList}</div>
+    <div style="margin-top:20px;"><b>จองสำเร็จ ${booked.length}/${payload.dates.length} วัน:</b></div>
+    <div style="font-size:13px;margin-top:6px;">${bookedList}</div>
     ${failedList}
-    <div style="margin-top:10px;padding:10px;background:var(--champagne-tint);border-radius:10px;font-size:13px;">
+    <div style="margin-top:20px;padding:10px;background:var(--champagne-tint);border-radius:10px;font-size:13px;">
       <b>รหัสชุดนัดหมาย:</b> ${escapeHtml(data.batchId || '-')}<br>
       เก็บรหัสนี้ไว้อ้างอิง หรือใช้แท็บ "ยกเลิก/เลื่อนนัดหมาย" เพื่อยกเลิกทั้งชุดในภายหลังได้เลย (ระบบค้นหาให้อัตโนมัติ)
     </div>
