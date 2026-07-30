@@ -453,16 +453,6 @@
           <div class="day-chip selected" data-day="5">ศุกร์</div>
         </div>
 
-        <label>เวลา *</label>
-        <select id="pSlotSelect">
-          <option value="">-- เลือกเวลา --</option>
-          <option value="13:00">13:00 - 13:30 น.</option>
-          <option value="13:30">13:30 - 14:00 น.</option>
-          <option value="14:00">14:00 - 14:30 น.</option>
-          <option value="14:30">14:30 - 15:00 น.</option>
-          <option value="15:00">15:00 - 15:30 น.</option>
-          <option value="15:30">15:30 - 16:00 น.</option>
-        </select>
         <div id="packagePreview" style="font-size:12px;color:var(--muted);margin-top:6px;"></div>
       </div>
 
@@ -523,6 +513,7 @@ function hideResults() {
   stepEls[2].classList.add('hidden');
   stepEls[3].classList.add('hidden');
   state.selectedSlot = null;
+  state.packageSlot = null;
 }
 ['#callerName', '#callerEmail', '#topic', '#participants', '#company'].forEach(sel => {
   $(sel).addEventListener('input', hideResults);
@@ -693,8 +684,6 @@ const packageEndPicker = createDatePicker({
   select: '#pEndCalSelect', prev: '#pEndCalPrev', next: '#pEndCalNext'
 }, { restrictWeekdays: true });
 pEndDateInput.addEventListener('change', () => { hideResults(); updatePackagePreview(); });
-
-$('#pSlotSelect').addEventListener('change', () => { hideResults(); updatePackagePreview(); });
 
 document.querySelectorAll('.day-chip').forEach(chip => {
   chip.addEventListener('click', () => {
@@ -1168,22 +1157,39 @@ $('#btnCheck').addEventListener('click', async () => {
     const startIso = pStartDateInput.value;
     const endIso = pEndDateInput.value;
     const dows = selectedWeekdays();
-    const slot = $('#pSlotSelect').value;
 
     if (!startIso || !endIso) { statusEl.textContent = 'กรุณาเลือกวันเริ่มต้นและวันสิ้นสุด'; statusEl.className = 'status error'; return; }
     if (endIso < startIso) { statusEl.textContent = 'วันสิ้นสุดต้องไม่ก่อนวันเริ่มต้น'; statusEl.className = 'status error'; return; }
     if (!dows.length) { statusEl.textContent = 'กรุณาเลือกวันในสัปดาห์อย่างน้อย 1 วัน'; statusEl.className = 'status error'; return; }
-    if (!slot) { statusEl.textContent = 'กรุณาเลือกเวลา'; statusEl.className = 'status error'; return; }
 
     const dates = computePackageDates(startIso, endIso, dows);
     if (!dates.length) { statusEl.textContent = 'ไม่มีวันที่ตรงเงื่อนไขในช่วงที่เลือก'; statusEl.className = 'status error'; return; }
     if (dates.length > 60) { statusEl.textContent = 'เลือกได้ไม่เกิน 60 วันต่อการจอง 1 ชุด กรุณาย่อช่วงวันที่ลง'; statusEl.className = 'status error'; return; }
 
     state.packageDates = dates;
-    state.packageSlot = { start: slot };
-    renderPackageConfirmSummary();
-    stepEls[3].classList.remove('hidden');
-    setTimeout(() => stepEls[3].scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    const btn = $('#btnCheck');
+    btn.disabled = true;
+    btn.innerHTML = 'กำลังตรวจสอบ...<span class="spinner"></span>';
+    try {
+      const results = await Promise.all(dates.map(d => callWebhook({ action: 'get_availability', date: d, executives: execArray() })));
+      const commonSlots = intersectSlots(results.map(r => r.slots || []));
+      if (!commonSlots.length) {
+        statusEl.textContent = 'ไม่มีช่วงเวลาที่ว่างตรงกันทุกวันที่เลือก กรุณาลดจำนวนวันหรือจองทีละวันแทน';
+        statusEl.className = 'status error';
+        return;
+      }
+      renderPackageSlots(commonSlots);
+      renderPackageConfirmSummary();
+      stepEls[2].classList.remove('hidden');
+      stepEls[3].classList.remove('hidden');
+      setTimeout(() => stepEls[2].scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    } catch (err) {
+      statusEl.textContent = err.message;
+      statusEl.className = 'status error';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'ค้นหาเวลาว่าง';
+    }
     return;
   }
 
@@ -1286,11 +1292,52 @@ function renderConfirmSummary() {
   $('#confirmStatus').className = 'status';
 }
 
+// หาช่วงเวลาที่ "ว่างตรงกันทุกวัน" จากผลลัพธ์ get_availability ของแต่ละวันในชุด (จับคู่ด้วย slot.start)
+function intersectSlots(slotArrays) {
+  if (!slotArrays.length) return [];
+  let common = slotArrays[0];
+  for (let i = 1; i < slotArrays.length; i++) {
+    const startsSet = new Set(slotArrays[i].map(s => s.start));
+    common = common.filter(s => startsSet.has(s.start));
+  }
+  return common;
+}
+
+function renderPackageSlots(commonSlots) {
+  $('#slotDateLabel').textContent = `ทุกวันในชุด (${state.packageDates.length} วัน)`;
+  const container = $('#slotsContainer');
+  const suggestContainer = $('#suggestContainer');
+  container.innerHTML = '';
+  suggestContainer.innerHTML = '';
+  state.packageSlot = null;
+
+  const grid = document.createElement('div');
+  grid.className = 'slots-grid';
+  commonSlots.forEach(slot => {
+    const b = document.createElement('div');
+    b.className = 'slot-btn';
+    b.textContent = slot.start + '-' + slot.end;
+    b.addEventListener('click', () => selectPackageSlot(b, slot));
+    grid.appendChild(b);
+  });
+  container.appendChild(grid);
+}
+
+function selectPackageSlot(btnEl, slot) {
+  document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+  btnEl.classList.add('selected');
+  state.packageSlot = slot;
+  renderPackageConfirmSummary();
+}
+
 function renderPackageConfirmSummary() {
   const execArr = execArray();
   const dates = state.packageDates;
   const preview = dates.slice(0, 5).map(d => renderDateRow(d)).join('');
   const more = dates.length > 5 ? `<div style="margin-top:4px;">และอีก ${dates.length - 5} วัน</div>` : '';
+  const slotText = state.packageSlot
+    ? `${escapeHtml(state.packageSlot.start)} - ${escapeHtml(state.packageSlot.end)} น. (ทุกวันในชุด)`
+    : '<span style="color:var(--muted);">ยังไม่ได้เลือก — กรุณาเลือกเวลาในข้อ 2</span>';
   $('#confirmSummary').innerHTML = `
     <div><b>ผู้ขอนัด:</b> ${escapeHtml($('#callerName').value.trim())}</div>
     <div><b>อีเมลผู้ขอนัด:</b> ${escapeHtml($('#callerEmail').value.trim()) || '<span style="color:var(--muted);">ไม่ระบุ — จะไม่มีการส่งคำเชิญ</span>'}</div>
@@ -1298,11 +1345,11 @@ function renderPackageConfirmSummary() {
     <div><b>ผู้เข้าร่วม:</b> ${escapeHtml($('#participants').value.trim()) || '-'}</div>
     <div><b>บริษัท/โปรเจค:</b> ${escapeHtml($('#company').value.trim()) || '-'}</div>
     <div><b>ผู้บริหาร:</b> ${execLabel(execArr)}</div>
-    <div><b>เวลา:</b> ${escapeHtml(state.packageSlot.start)} น. (ทุกวันในชุด)</div>
+    <div><b>เวลา:</b> ${slotText}</div>
     <div style="margin-top:20px;"><b>จำนวนวันทั้งหมด:</b> ${dates.length} วัน</div>
     <div style="margin-top:6px;">${preview}${more}</div>
   `;
-  $('#btnConfirm').disabled = false;
+  $('#btnConfirm').disabled = !state.packageSlot;
   $('#confirmStatus').textContent = '';
   $('#confirmStatus').className = 'status';
 }
@@ -1479,7 +1526,6 @@ $('#btnNew').addEventListener('click', () => {
   packageStartPicker.reset();
   packageEndPicker.reset();
   document.querySelectorAll('.day-chip').forEach(c => c.classList.add('selected'));
-  $('#pSlotSelect').value = '';
   $('#packagePreview').textContent = '';
 
   showStep(1);
