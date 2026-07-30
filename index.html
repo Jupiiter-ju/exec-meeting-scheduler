@@ -1097,7 +1097,7 @@ function parseEventDescription(desc) {
 }
 
 function startReschedule(ev, dateIso, identity) {
-  state.reschedule = { date: dateIso, summary: ev.summary || '', callerName: identity.callerName, callerEmail: identity.callerEmail };
+  state.reschedule = { date: dateIso, summary: ev.summary || '', callerName: identity.callerName, callerEmail: identity.callerEmail, batchId: parseBatchId(ev.description) };
   showBookingCard();
   showStep(1);
   hideResults();
@@ -1420,18 +1420,20 @@ async function confirmPackageBooking() {
     }
 
     // ถ้ากำลังเลื่อนนัด (ไม่ใช่จองใหม่ล้วนๆ) — จองชุดใหม่สำเร็จแล้ว ให้ยกเลิกนัดเดิมต่อทันที
-    // (ยกเลิกแค่วันเดิมที่กด "เลื่อนนัด" มา ไม่ว่าจะเลือกจองชุดใหม่แทนกี่วันก็ตาม)
+    // ถ้านัดเดิมเป็นส่วนหนึ่งของชุด (มี batchId) ต้องยกเลิกทั้งชุดเดิม ไม่ใช่แค่วันเดียวที่กด "เลื่อนนัด" มา
     let oldCancelWarning = '';
     if (state.reschedule) {
       try {
-        const cancelRes = await callWebhook({
-          action: 'cancel',
-          source: 'website',
-          date: state.reschedule.date,
-          topic: state.reschedule.summary,
-          callerName: state.reschedule.callerName,
-          requesterEmail: state.reschedule.callerEmail
-        });
+        const cancelRes = state.reschedule.batchId
+          ? await callWebhook({ action: 'cancel_batch', batchId: state.reschedule.batchId, callerName: state.reschedule.callerName, requesterEmail: state.reschedule.callerEmail })
+          : await callWebhook({
+              action: 'cancel',
+              source: 'website',
+              date: state.reschedule.date,
+              topic: state.reschedule.summary,
+              callerName: state.reschedule.callerName,
+              requesterEmail: state.reschedule.callerEmail
+            });
         if (cancelRes && cancelRes.success === false) {
           oldCancelWarning = `⚠️ จองชุดใหม่สำเร็จแล้ว แต่ยกเลิกนัดเดิม (${escapeHtml(state.reschedule.summary)}) ไม่สำเร็จ: ${escapeHtml(cancelRes.error || '')} กรุณายกเลิกนัดเดิมด้วยตนเองผ่านหน้า "ยกเลิก/เลื่อนนัดหมาย"`;
         }
@@ -1520,17 +1522,20 @@ $('#btnConfirm').addEventListener('click', async () => {
     }
 
     // ถ้ากำลังเลื่อนนัด (ไม่ใช่จองใหม่ล้วนๆ) — นัดใหม่จองสำเร็จแล้ว ให้ยกเลิกนัดเดิมต่อทันที
+    // ถ้านัดเดิมเป็นส่วนหนึ่งของชุด (มี batchId) ต้องยกเลิกทั้งชุดเดิม ไม่ใช่แค่วันเดียวที่กด "เลื่อนนัด" มา
     let oldCancelWarning = '';
     if (state.reschedule) {
       try {
-        const cancelRes = await callWebhook({
-          action: 'cancel',
-          source: 'website',
-          date: state.reschedule.date,
-          topic: state.reschedule.summary,
-          callerName: state.reschedule.callerName,
-          requesterEmail: state.reschedule.callerEmail
-        });
+        const cancelRes = state.reschedule.batchId
+          ? await callWebhook({ action: 'cancel_batch', batchId: state.reschedule.batchId, callerName: state.reschedule.callerName, requesterEmail: state.reschedule.callerEmail })
+          : await callWebhook({
+              action: 'cancel',
+              source: 'website',
+              date: state.reschedule.date,
+              topic: state.reschedule.summary,
+              callerName: state.reschedule.callerName,
+              requesterEmail: state.reschedule.callerEmail
+            });
         if (cancelRes && cancelRes.success === false) {
           oldCancelWarning = `⚠️ จองนัดใหม่สำเร็จแล้ว แต่ยกเลิกนัดเดิม (${escapeHtml(state.reschedule.summary)}) ไม่สำเร็จ: ${escapeHtml(cancelRes.error || '')} กรุณายกเลิกนัดเดิมด้วยตนเองผ่านหน้า "ยกเลิก/เลื่อนนัดหมาย"`;
         }
