@@ -906,16 +906,18 @@ function showManageCard() {
 function showBookingCard() {
   manageCard.classList.add('hidden');
   bookingCard.classList.remove('hidden');
-  // ถ้าค้างอยู่หน้า "จองสำเร็จ" (ขั้นตอน 4) จากรอบก่อน ให้เริ่มฟอร์มใหม่ให้สะอาด
-  // ไม่ทำตอนกำลังเลื่อนนัดอยู่ (state.reschedule ถูกตั้งไว้ก่อนเรียกฟังก์ชันนี้แล้วในกรณีนั้น)
-  if (!state.reschedule && !stepEls[4].classList.contains('hidden')) {
-    resetBookingForm();
-  }
   setActiveTab('booking');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-document.querySelectorAll('.tab-btn[data-view="booking"]').forEach(btn => btn.addEventListener('click', showBookingCard));
+// เมื่อกดแท็บ "นัดหมายผู้บริหาร" ตรงๆ (ไม่ใช่มาจากการกดปุ่ม "เลื่อนนัด") ให้เริ่มฟอร์มใหม่ให้สะอาดเสมอ
+// เพื่อไม่ให้ค้างอยู่ในสถานะเลื่อนนัด/กรอกฟอร์มค้างจากรอบก่อน
+function goToBookingTab() {
+  resetBookingForm();
+  showBookingCard();
+}
+
+document.querySelectorAll('.tab-btn[data-view="booking"]').forEach(btn => btn.addEventListener('click', goToBookingTab));
 document.querySelectorAll('.tab-btn[data-view="manage"]').forEach(btn => btn.addEventListener('click', showManageCard));
 
 $('#btnSearchAgain').addEventListener('click', () => {
