@@ -497,6 +497,7 @@ const state = {
   reschedule: null, // { date, summary, callerName, callerEmail } ของนัดเดิม เมื่ออยู่ในโหมดเลื่อนนัด
   isPackage: false,
   packageDates: [],
+  packageHolidayDates: [],
   packageSlot: null
 };
 
@@ -514,6 +515,7 @@ function hideResults() {
   stepEls[3].classList.add('hidden');
   state.selectedSlot = null;
   state.packageSlot = null;
+  state.packageHolidayDates = [];
 }
 ['#callerName', '#callerEmail', '#topic', '#participants', '#company'].forEach(sel => {
   $(sel).addEventListener('input', hideResults);
@@ -1166,13 +1168,29 @@ $('#btnCheck').addEventListener('click', async () => {
     if (!dates.length) { statusEl.textContent = 'ไม่มีวันที่ตรงเงื่อนไขในช่วงที่เลือก'; statusEl.className = 'status error'; return; }
     if (dates.length > 60) { statusEl.textContent = 'เลือกได้ไม่เกิน 60 วันต่อการจอง 1 ชุด กรุณาย่อช่วงวันที่ลง'; statusEl.className = 'status error'; return; }
 
-    state.packageDates = dates;
     const btn = $('#btnCheck');
     btn.disabled = true;
     btn.innerHTML = 'กำลังตรวจสอบ...<span class="spinner"></span>';
     try {
       const results = await Promise.all(dates.map(d => callWebhook({ action: 'get_availability', date: d, executives: execArray() })));
-      const commonSlots = intersectSlots(results.map(r => r.slots || []));
+
+      // แยกวันหยุดพิเศษออกก่อนตั้งแต่ตรงนี้ — ไม่เอาไปนับรวม/ไม่เอาไปคิด intersection เวลาว่าง
+      // (กันไม่ให้วันหยุด 1 วันทำให้ทั้งชุดหาเวลาตรงกันไม่เจอ) แล้วโชว์ให้ผู้ใช้เห็นชัดเจนก่อนกดยืนยัน
+      const holidayDates = dates.filter((d, i) => results[i].isHoliday);
+      const bookableEntries = dates
+        .map((d, i) => ({ date: d, data: results[i] }))
+        .filter(e => !e.data.isHoliday);
+
+      if (!bookableEntries.length) {
+        statusEl.textContent = 'ทุกวันที่เลือกเป็นวันหยุดพิเศษของบริษัททั้งหมด กรุณาเลือกช่วงวันที่อื่น';
+        statusEl.className = 'status error';
+        return;
+      }
+
+      state.packageDates = bookableEntries.map(e => e.date);
+      state.packageHolidayDates = holidayDates;
+
+      const commonSlots = intersectSlots(bookableEntries.map(e => e.data.slots || []));
       if (!commonSlots.length) {
         statusEl.textContent = 'ไม่มีช่วงเวลาที่ว่างตรงกันทุกวันที่เลือก กรุณาลดจำนวนวันหรือจองทีละวันแทน';
         statusEl.className = 'status error';
@@ -1338,6 +1356,12 @@ function renderPackageConfirmSummary() {
   const slotText = state.packageSlot
     ? `${escapeHtml(state.packageSlot.start)} - ${escapeHtml(state.packageSlot.end)} น. (ทุกวันในชุด)`
     : '<span style="color:var(--muted);">ยังไม่ได้เลือก — กรุณาเลือกเวลาในข้อ 2</span>';
+  const holidayNote = (state.packageHolidayDates && state.packageHolidayDates.length)
+    ? `<div style="margin-top:14px;padding:10px;background:var(--champagne-tint);border:1px solid var(--pink-gold);border-radius:10px;font-size:13px;">
+        <b>หมายเหตุ:</b> วันต่อไปนี้เป็นวันหยุดพิเศษของบริษัท จะไม่ถูกจองในชุดนี้ (${state.packageHolidayDates.length} วัน):
+        <div style="margin-top:6px;">${state.packageHolidayDates.map(d => renderDateRow(d)).join('')}</div>
+      </div>`
+    : '';
   $('#confirmSummary').innerHTML = `
     <div><b>ผู้ขอนัด:</b> ${escapeHtml($('#callerName').value.trim())}</div>
     <div><b>อีเมลผู้ขอนัด:</b> ${escapeHtml($('#callerEmail').value.trim()) || '<span style="color:var(--muted);">ไม่ระบุ — จะไม่มีการส่งคำเชิญ</span>'}</div>
@@ -1346,8 +1370,9 @@ function renderPackageConfirmSummary() {
     <div><b>บริษัท/โปรเจค:</b> ${escapeHtml($('#company').value.trim()) || '-'}</div>
     <div><b>ผู้บริหาร:</b> ${execLabel(execArr)}</div>
     <div><b>เวลา:</b> ${slotText}</div>
-    <div style="margin-top:20px;"><b>จำนวนวันทั้งหมด:</b> ${dates.length} วัน</div>
+    <div style="margin-top:20px;"><b>จำนวนวันที่จะจอง:</b> ${dates.length} วัน</div>
     <div style="margin-top:6px;">${preview}${more}</div>
+    ${holidayNote}
   `;
   $('#btnConfirm').disabled = !state.packageSlot;
   $('#confirmStatus').textContent = '';
@@ -1410,6 +1435,12 @@ function renderPackageDone(data, payload) {
   const failedList = failed.length
     ? `<div style="margin-top:20px;"><b style="color:var(--red);">วันที่จองไม่สำเร็จ (${failed.length}):</b><div style="margin-top:6px;">${failed.map(f => renderDateRow(f.date, { suffix: ' — ' + escapeHtml(f.reason || '') })).join('')}</div></div>`
     : '';
+  const holidayList = (state.packageHolidayDates && state.packageHolidayDates.length)
+    ? `<div style="margin-top:20px;padding:10px;background:var(--champagne-tint);border:1px solid var(--pink-gold);border-radius:10px;font-size:13px;">
+        <b>ไม่ได้จอง (วันหยุดพิเศษของบริษัท, ${state.packageHolidayDates.length} วัน):</b>
+        <div style="margin-top:6px;">${state.packageHolidayDates.map(d => renderDateRow(d)).join('')}</div>
+      </div>`
+    : '';
   $('#doneSummary').innerHTML = `
     <div><b>หัวข้อ:</b> ${escapeHtml(payload.topic)}</div>
     <div><b>ผู้บริหาร:</b> ${execLabel(execArray())}</div>
@@ -1417,6 +1448,7 @@ function renderPackageDone(data, payload) {
     <div style="margin-top:20px;"><b>จองสำเร็จ ${booked.length}/${payload.dates.length} วัน:</b></div>
     <div style="font-size:13px;margin-top:6px;">${bookedList}</div>
     ${failedList}
+    ${holidayList}
   `;
 }
 
@@ -1520,6 +1552,7 @@ $('#btnNew').addEventListener('click', () => {
   $('#isPackage').disabled = false;
   state.isPackage = false;
   state.packageDates = [];
+  state.packageHolidayDates = [];
   state.packageSlot = null;
   $('#singleDateSection').classList.remove('hidden');
   $('#packageDateSection').classList.add('hidden');
