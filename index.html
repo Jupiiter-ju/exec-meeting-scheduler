@@ -1097,10 +1097,10 @@ function startReschedule(ev, dateIso, identity) {
   showStep(1);
   hideResults();
 
-  // เลื่อนนัดใช้ได้เฉพาะนัดเดี่ยว ปิดโหมด "จองแบบชุด" ระหว่างนี้ไว้ก่อน
+  // รีเซ็ตกลับเป็นโหมดนัดเดี่ยวเป็นค่าเริ่มต้น แต่ยังเลือกสลับเป็น "จองแบบชุด" ได้เสมอ
+  // (ถ้าเลือกจองแบบชุด จะจองชุดใหม่แล้วยกเลิกนัดเดิมทิ้ง ไม่ว่านัดเดิมจะเป็นนัดเดี่ยวหรือชุดก็ตาม)
   state.isPackage = false;
   $('#isPackage').checked = false;
-  $('#isPackage').disabled = true;
   $('#singleDateSection').classList.remove('hidden');
   $('#packageDateSection').classList.add('hidden');
 
@@ -1133,7 +1133,6 @@ $('#cancelRescheduleLink').addEventListener('click', () => {
   $('#topic').value = '';
   participantsAutoSynced = true;
   $('#rescheduleBanner').classList.add('hidden');
-  $('#isPackage').disabled = false;
   hideResults();
 });
 
@@ -1414,7 +1413,33 @@ async function confirmPackageBooking() {
       statusEl.className = 'status error';
       return;
     }
-    renderPackageDone(data, payload);
+
+    // ถ้ากำลังเลื่อนนัด (ไม่ใช่จองใหม่ล้วนๆ) — จองชุดใหม่สำเร็จแล้ว ให้ยกเลิกนัดเดิมต่อทันที
+    // (ยกเลิกแค่วันเดิมที่กด "เลื่อนนัด" มา ไม่ว่าจะเลือกจองชุดใหม่แทนกี่วันก็ตาม)
+    let oldCancelWarning = '';
+    if (state.reschedule) {
+      try {
+        const cancelRes = await callWebhook({
+          action: 'cancel',
+          source: 'website',
+          date: state.reschedule.date,
+          topic: state.reschedule.summary,
+          callerName: state.reschedule.callerName,
+          requesterEmail: state.reschedule.callerEmail
+        });
+        if (cancelRes && cancelRes.success === false) {
+          oldCancelWarning = `⚠️ จองชุดใหม่สำเร็จแล้ว แต่ยกเลิกนัดเดิม (${escapeHtml(state.reschedule.summary)}) ไม่สำเร็จ: ${escapeHtml(cancelRes.error || '')} กรุณายกเลิกนัดเดิมด้วยตนเองผ่านหน้า "ยกเลิก/เลื่อนนัดหมาย"`;
+        }
+      } catch (cancelErr) {
+        oldCancelWarning = `⚠️ จองชุดใหม่สำเร็จแล้ว แต่ยกเลิกนัดเดิมไม่สำเร็จ: ${escapeHtml(cancelErr.message)} กรุณายกเลิกนัดเดิมด้วยตนเองผ่านหน้า "ยกเลิก/เลื่อนนัดหมาย"`;
+      }
+    }
+
+    renderPackageDone(data, payload, oldCancelWarning);
+    state.reschedule = null;
+    $('#callerName').readOnly = false;
+    $('#callerEmail').readOnly = false;
+    $('#rescheduleBanner').classList.add('hidden');
     showStep(4);
   } catch (err) {
     statusEl.textContent = err.message;
@@ -1425,8 +1450,8 @@ async function confirmPackageBooking() {
   }
 }
 
-function renderPackageDone(data, payload) {
-  $('#doneTitle').textContent = 'จองแบบชุดสำเร็จ';
+function renderPackageDone(data, payload, oldCancelWarning) {
+  $('#doneTitle').textContent = state.reschedule ? 'เลื่อนนัดหมายสำเร็จ (จองแบบชุดใหม่)' : 'จองแบบชุดสำเร็จ';
   const booked = data.booked || [];
   const failed = data.failed || [];
   const bookedList = booked.length
@@ -1449,6 +1474,8 @@ function renderPackageDone(data, payload) {
     <div style="font-size:13px;margin-top:6px;">${bookedList}</div>
     ${failedList}
     ${holidayList}
+    ${state.reschedule && !oldCancelWarning ? `<div style="margin-top:20px;color:var(--muted);font-size:13px;">นัดหมายเดิม (${escapeHtml(state.reschedule.summary)}) ถูกยกเลิกให้เรียบร้อยแล้ว</div>` : ''}
+    ${oldCancelWarning ? `<div style="margin-top:20px;color:var(--red);font-size:13px;">${oldCancelWarning}</div>` : ''}
   `;
 }
 
