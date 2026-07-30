@@ -1058,7 +1058,7 @@ function renderMeetings(matches, identity) {
           rowStatusEl.textContent = '';
           rowStatusEl.className = 'status';
           try {
-            const res = await callWebhook({ action: 'cancel_batch', batchId });
+            const res = await callWebhook({ action: 'cancel_batch', batchId, callerName: identity.callerName, requesterEmail: identity.callerEmail });
             if (res && res.success === false) throw new Error(res.error || 'ยกเลิกทั้งชุดไม่สำเร็จ');
             $('#searchStatus').textContent = res.message || `ยกเลิกนัดหมายทั้งชุดเรียบร้อยแล้ว (${res.deletedCount || ''} รายการ)`;
             $('#searchStatus').className = 'status success';
