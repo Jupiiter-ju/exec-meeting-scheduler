@@ -1117,7 +1117,7 @@ function startReschedule(ev, dateIso, identity) {
   $('#callerName').readOnly = true;
   $('#callerEmail').value = identity.callerEmail;
   $('#callerEmail').readOnly = true;
-  $('#topic').value = parsed.topic || ev.summary || '';
+  $('#topic').value = parsed.topic;
   $('#participants').value = parsed.participants;
   participantsAutoSynced = false;
   $('#company').value = parsed.company;
