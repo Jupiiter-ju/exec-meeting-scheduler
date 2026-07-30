@@ -906,6 +906,11 @@ function showManageCard() {
 function showBookingCard() {
   manageCard.classList.add('hidden');
   bookingCard.classList.remove('hidden');
+  // ถ้าค้างอยู่หน้า "จองสำเร็จ" (ขั้นตอน 4) จากรอบก่อน ให้เริ่มฟอร์มใหม่ให้สะอาด
+  // ไม่ทำตอนกำลังเลื่อนนัดอยู่ (state.reschedule ถูกตั้งไว้ก่อนเรียกฟังก์ชันนี้แล้วในกรณีนั้น)
+  if (!state.reschedule && !stepEls[4].classList.contains('hidden')) {
+    resetBookingForm();
+  }
   setActiveTab('booking');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -1558,7 +1563,7 @@ $('#btnConfirm').addEventListener('click', async () => {
   }
 });
 
-$('#btnNew').addEventListener('click', () => {
+function resetBookingForm() {
   $('#callerName').value = '';
   $('#callerName').readOnly = false;
   $('#callerEmail').value = '';
@@ -1589,7 +1594,9 @@ $('#btnNew').addEventListener('click', () => {
   $('#packagePreview').textContent = '';
 
   showStep(1);
-});
+}
+
+$('#btnNew').addEventListener('click', resetBookingForm);
 </script>
 </body>
 </html>
