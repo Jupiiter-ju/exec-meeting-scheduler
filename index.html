@@ -1524,20 +1524,20 @@ $('#btnConfirm').addEventListener('click', async () => {
     }
 
     // ถ้ากำลังเลื่อนนัด (ไม่ใช่จองใหม่ล้วนๆ) — นัดใหม่จองสำเร็จแล้ว ให้ยกเลิกนัดเดิมต่อทันที
-    // ถ้านัดเดิมเป็นส่วนหนึ่งของชุด (มี batchId) ต้องยกเลิกทั้งชุดเดิม ไม่ใช่แค่วันเดียวที่กด "เลื่อนนัด" มา
+    // ที่นี่เป็นโหมดจองเดี่ยว (ไม่ได้ติ๊ก "จองแบบชุด") จึงยกเลิกแค่วันเดิมวันเดียวที่กด "เลื่อนนัด" มา
+    // แม้นัดเดิมจะเป็นส่วนหนึ่งของชุดก็ตาม — วันอื่นๆ ในชุดเดิมต้องไม่ถูกแตะต้อง
+    // (ถ้าต้องการเลื่อนทั้งชุด ต้องติ๊ก "จองแบบชุด" แล้วไปเข้า confirmPackageBooking() ซึ่งจะยกเลิกทั้งชุดแทน)
     let oldCancelWarning = '';
     if (state.reschedule) {
       try {
-        const cancelRes = state.reschedule.batchId
-          ? await callWebhook({ action: 'cancel_batch', batchId: state.reschedule.batchId, callerName: state.reschedule.callerName, requesterEmail: state.reschedule.callerEmail })
-          : await callWebhook({
-              action: 'cancel',
-              source: 'website',
-              date: state.reschedule.date,
-              topic: state.reschedule.summary,
-              callerName: state.reschedule.callerName,
-              requesterEmail: state.reschedule.callerEmail
-            });
+        const cancelRes = await callWebhook({
+          action: 'cancel',
+          source: 'website',
+          date: state.reschedule.date,
+          topic: state.reschedule.summary,
+          callerName: state.reschedule.callerName,
+          requesterEmail: state.reschedule.callerEmail
+        });
         if (cancelRes && cancelRes.success === false) {
           oldCancelWarning = `⚠️ จองนัดใหม่สำเร็จแล้ว แต่ยกเลิกนัดเดิม (${escapeHtml(state.reschedule.summary)}) ไม่สำเร็จ: ${escapeHtml(cancelRes.error || '')} กรุณายกเลิกนัดเดิมด้วยตนเองผ่านหน้า "ยกเลิก/เลื่อนนัดหมาย"`;
         }
