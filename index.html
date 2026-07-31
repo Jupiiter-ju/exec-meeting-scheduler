@@ -292,12 +292,12 @@
   .batch-tag { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
 
   /* รายการวันที่หลายวัน — จัดคอลัมน์ (วัน/เลขที่/เดือน/ปี) ให้ตรงกันทุกแถว */
-  .date-row { display: flex; align-items: baseline; gap: 6px; font-size: 13px; line-height: 1.8; color: var(--dark-gray); }
+  .date-row { display: flex; align-items: baseline; gap: 6px; font-size: 13px; line-height: 1.8; color: var(--dark-gray); text-align: left; }
   .date-row .dr-prefix { flex: 0 0 22px; }
-  .date-row .dr-weekday { flex: 0 0 112px; white-space: nowrap; }
+  .date-row .dr-weekday { flex: 0 0 112px; white-space: nowrap; text-align: left; }
   .date-row .dr-day { flex: 0 0 20px; text-align: right; }
-  .date-row .dr-month { flex: 0 0 76px; }
-  .date-row .dr-year { flex: 0 0 40px; }
+  .date-row .dr-month { flex: 0 0 76px; text-align: left; }
+  .date-row .dr-year { flex: 0 0 40px; text-align: left; }
   .date-row .dr-suffix { color: var(--red); flex: 1 1 auto; }
 </style>
 </head>
