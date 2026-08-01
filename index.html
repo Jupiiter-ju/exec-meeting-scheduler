@@ -462,7 +462,7 @@
 
     <!-- STEP 2: SLOT PICKER -->
     <div class="section hidden" id="step2">
-      <div class="step-title">2. เลือกเวลาที่ว่าง — <span id="slotDateLabel"></span></div>
+      <div class="step-title">เลือกช่วงเวลา - <span id="slotDateLabel"></span></div>
       <div id="slotsContainer"></div>
       <div id="suggestContainer"></div>
     </div>
@@ -1328,7 +1328,7 @@ function intersectSlots(slotArrays) {
 }
 
 function renderPackageSlots(commonSlots) {
-  $('#slotDateLabel').textContent = `ทุกวันในชุด (${state.packageDates.length} วัน)`;
+  $('#slotDateLabel').textContent = `หากนัดพร้อมกันหลายวันจะต้องเลือกช่วงเวลาเดียวกัน (${state.packageDates.length} วัน)`;
   const container = $('#slotsContainer');
   const suggestContainer = $('#suggestContainer');
   container.innerHTML = '';
