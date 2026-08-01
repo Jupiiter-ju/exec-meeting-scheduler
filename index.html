@@ -987,7 +987,7 @@ function renderMeetings(matches, identity) {
         <div class="meeting-date">${formatDateTH(dateIso)}</div>
         ${timeStr ? `<div class="meeting-time">${timeStr}</div>` : ''}
         <div class="meeting-summary">${escapeHtml(ev.summary || '')}</div>
-        ${batchId ? `<div class="batch-tag">🔁 นัดนี้เป็นส่วนหนึ่งของการจองแบบชุด</div>` : ''}
+        ${batchId ? `<div class="batch-tag">นัดหมายนี้เป็นส่วนหนึ่งของการจองแบบชุด</div>` : ''}
         <div class="meeting-actions row">
           <button class="secondary btn-reschedule">เลื่อนนัด</button>
           <button class="btn-danger btn-cancel-meeting">ยกเลิกนัดนี้</button>
