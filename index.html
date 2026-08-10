@@ -1198,7 +1198,7 @@ $('#btnCheck').addEventListener('click', async () => {
       state.packageDates = bookableEntries.map(e => e.date);
       state.packageHolidayDates = holidayDates;
 
-      const mergedSlots = mergePackageSlots(bookableEntries.map(e => e.data.slots || []));
+      const mergedSlots = mergePackageSlots(bookableEntries.map(e => e.data.allSlots || e.data.slots || []));
       renderPackageSlots(mergedSlots);
       renderPackageConfirmSummary();
       stepEls[2].classList.remove('hidden');
@@ -1250,7 +1250,9 @@ function renderSlots(data) {
   suggestContainer.innerHTML = '';
   state.selectedSlot = null;
 
-  const slots = data.slots || [];
+  // ใช้ allSlots (รายการครบทุกช่วง มีสถานะ available) ถ้า backend ส่งมา
+  // ถ้ายังไม่ได้อัปเดต backend จะ fallback ไปใช้ slots เดิม (เฉพาะที่ว่าง) — ยังทำงานได้ปกติ
+  const slots = data.allSlots || data.slots || [];
   const hasAvailable = slots.some(s => s.available);
 
   // แสดงทุกช่วงเวลาเสมอ — ช่วงที่ว่างกดได้ปกติ, ช่วงที่ไม่ว่างเป็นปุ่มเทากดไม่ได้
