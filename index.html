@@ -305,7 +305,7 @@
 <div class="page-bg"></div>
 <div class="wrap">
   <h1>Executive Scheduling (คุณกฤช / คุณเบียร์)</h1>
-  <div class="sub">จันทร์–พุธ เวลา 13:00–16:00 น. (นัดละ 30 นาที)</div>
+  <div class="sub">จันทร์–พุธ เวลา 12:00–16:00 น. (นัดละ 30 นาที)</div>
   <div id="demoBanner" class="hidden" style="background:var(--champagne-tint);border:1px solid var(--pink-gold);color:var(--charcoal);border-radius:12px;padding:10px 14px;font-size:13px;margin-bottom:16px;">
     ⚠️ โหมดตัวอย่าง — ยังไม่ได้เชื่อม n8n จริง ข้อมูลเวลาว่าง/การจองที่เห็นเป็นข้อมูลจำลองเพื่อทดสอบหน้าตาเท่านั้น
   </div>
@@ -792,6 +792,8 @@ function mockWebhook(payload) {
     setTimeout(() => {
       if (payload.action === 'get_availability') {
         const ALL_SLOTS = [
+          { start: '12:00', end: '12:30' },
+          { start: '12:30', end: '13:00' },
           { start: '13:00', end: '13:30' },
           { start: '13:30', end: '14:00' },
           { start: '14:00', end: '14:30' },
