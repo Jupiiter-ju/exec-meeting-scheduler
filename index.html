@@ -305,7 +305,7 @@
 <div class="page-bg"></div>
 <div class="wrap">
   <h1>Executive Scheduling (คุณกฤช / คุณเบียร์)</h1>
-  <div class="sub">จันทร์–ศุกร์ เวลา 13:00–16:00 น. (นัดละ 30 นาที)</div>
+  <div class="sub">จันทร์–พุธ เวลา 13:00–16:00 น. (นัดละ 30 นาที)</div>
   <div id="demoBanner" class="hidden" style="background:var(--champagne-tint);border:1px solid var(--pink-gold);color:var(--charcoal);border-radius:12px;padding:10px 14px;font-size:13px;margin-bottom:16px;">
     ⚠️ โหมดตัวอย่าง — ยังไม่ได้เชื่อม n8n จริง ข้อมูลเวลาว่าง/การจองที่เห็นเป็นข้อมูลจำลองเพื่อทดสอบหน้าตาเท่านั้น
   </div>
@@ -449,8 +449,6 @@
           <div class="day-chip selected" data-day="1">จันทร์</div>
           <div class="day-chip selected" data-day="2">อังคาร</div>
           <div class="day-chip selected" data-day="3">พุธ</div>
-          <div class="day-chip selected" data-day="4">พฤหัสบดี</div>
-          <div class="day-chip selected" data-day="5">ศุกร์</div>
         </div>
 
         <div id="packagePreview" style="font-size:12px;color:var(--muted);margin-top:6px;"></div>
@@ -582,7 +580,7 @@ function createDatePicker(ids, opts) {
         const nextCellDate = new Date(y, m + 1, nd);
         const nextIso = `${nextCellDate.getFullYear()}-${pad2(nextCellDate.getMonth() + 1)}-${pad2(nextCellDate.getDate())}`;
         const nextDow = nextCellDate.getDay();
-        if (nextIso >= todayIso && !(restrictWeekdays && (nextDow === 0 || nextDow === 6))) {
+        if (nextIso >= todayIso && !(restrictWeekdays && ![1, 2, 3].includes(nextDow))) {
           el.classList.add('next-clickable');
           if (nextIso === calSelected) el.classList.add('selected');
           el.addEventListener('click', () => {
@@ -596,8 +594,8 @@ function createDatePicker(ids, opts) {
         cellDate = new Date(y, m, dayOffset);
         const iso = `${y}-${pad2(m + 1)}-${pad2(dayOffset)}`;
         const dow = cellDate.getDay();
-        if (iso < todayIso || (restrictWeekdays && (dow === 0 || dow === 6))) {
-          el.classList.add('dim'); // วันที่ผ่านมาแล้ว หรือ (ถ้าจำกัด) เสาร์-อาทิตย์ เลือกไม่ได้
+        if (iso < todayIso || (restrictWeekdays && ![1, 2, 3].includes(dow))) {
+          el.classList.add('dim'); // วันที่ผ่านมาแล้ว หรือ (ถ้าจำกัด) วันที่ไม่รับนัด (รับเฉพาะ จันทร์-พุธ) เลือกไม่ได้
         } else {
           if (iso === calSelected) el.classList.add('selected');
           else if (iso === todayIso) el.classList.add('today');
@@ -1220,7 +1218,7 @@ $('#btnCheck').addEventListener('click', async () => {
   if (!date) { statusEl.textContent = 'กรุณาเลือกวันที่'; statusEl.className = 'status error'; return; }
 
   const dow = new Date(date + 'T00:00:00+07:00').getDay();
-  if (dow === 0 || dow === 6) { statusEl.textContent = 'กรุณาเลือกวันจันทร์-ศุกร์เท่านั้น'; statusEl.className = 'status error'; return; }
+  if (![1, 2, 3].includes(dow)) { statusEl.textContent = 'กรุณาเลือกวันจันทร์-พุธเท่านั้น'; statusEl.className = 'status error'; return; }
 
   state.date = date;
   const btn = $('#btnCheck');
