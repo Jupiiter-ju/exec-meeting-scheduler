@@ -144,6 +144,8 @@
     transition: .2s;
   }
   .slot-btn:hover { border-color: var(--pink-gold); }
+  .slot-btn.disabled { background: #F0F0F0; color: #BBB; cursor: not-allowed; }
+  .slot-btn.disabled:hover { border-color: var(--border); }
   .slot-btn.selected {
     border-color: var(--pink-gold);
     background: var(--champagne-tint);
@@ -1196,13 +1198,8 @@ $('#btnCheck').addEventListener('click', async () => {
       state.packageDates = bookableEntries.map(e => e.date);
       state.packageHolidayDates = holidayDates;
 
-      const commonSlots = intersectSlots(bookableEntries.map(e => e.data.slots || []));
-      if (!commonSlots.length) {
-        statusEl.textContent = 'ไม่มีช่วงเวลาที่ว่างตรงกันทุกวันที่เลือก กรุณาลดจำนวนวันหรือจองทีละวันแทน';
-        statusEl.className = 'status error';
-        return;
-      }
-      renderPackageSlots(commonSlots);
+      const mergedSlots = mergePackageSlots(bookableEntries.map(e => e.data.slots || []));
+      renderPackageSlots(mergedSlots);
       renderPackageConfirmSummary();
       stepEls[2].classList.remove('hidden');
       stepEls[3].classList.remove('hidden');
@@ -1253,8 +1250,27 @@ function renderSlots(data) {
   suggestContainer.innerHTML = '';
   state.selectedSlot = null;
 
-  if (!data.slots || data.slots.length === 0) {
+  const slots = data.slots || [];
+  const hasAvailable = slots.some(s => s.available);
+
+  // แสดงทุกช่วงเวลาเสมอ — ช่วงที่ว่างกดได้ปกติ, ช่วงที่ไม่ว่างเป็นปุ่มเทากดไม่ได้
+  if (slots.length) {
+    const grid = document.createElement('div');
+    grid.className = 'slots-grid';
+    slots.forEach(slot => {
+      const b = document.createElement('div');
+      b.className = slot.available ? 'slot-btn' : 'slot-btn disabled';
+      b.textContent = slot.start + '-' + slot.end;
+      if (slot.available) b.addEventListener('click', () => selectSlot(b, data.date, slot));
+      grid.appendChild(b);
+    });
+    container.appendChild(grid);
+  } else {
     container.innerHTML = '<div class="empty-msg">วันนี้ไม่มีเวลาว่างแล้ว</div>';
+  }
+
+  // ถ้าวันนั้นไม่มีช่วงว่างเลย ให้แนะนำวันใกล้เคียงที่ว่างเพิ่มด้านล่าง (ปุ่มเทาด้านบนยังแสดงอยู่)
+  if (!hasAvailable) {
     if (data.nextAvailable) {
       const box = document.createElement('div');
       box.className = 'suggest-box';
@@ -1273,19 +1289,7 @@ function renderSlots(data) {
     } else {
       suggestContainer.innerHTML = '<div class="empty-msg">ไม่พบเวลาว่างในอีก 21 วันข้างหน้า กรุณาติดต่อเจ้าหน้าที่โดยตรง</div>';
     }
-    return;
   }
-
-  const grid = document.createElement('div');
-  grid.className = 'slots-grid';
-  data.slots.forEach(slot => {
-    const b = document.createElement('div');
-    b.className = 'slot-btn';
-    b.textContent = slot.start + '-' + slot.end;
-    b.addEventListener('click', () => selectSlot(b, data.date, slot));
-    grid.appendChild(b);
-  });
-  container.appendChild(grid);
 }
 
 function selectSlot(btnEl, date, slot) {
@@ -1316,18 +1320,19 @@ function renderConfirmSummary() {
   $('#confirmStatus').className = 'status';
 }
 
-// หาช่วงเวลาที่ "ว่างตรงกันทุกวัน" จากผลลัพธ์ get_availability ของแต่ละวันในชุด (จับคู่ด้วย slot.start)
-function intersectSlots(slotArrays) {
+// รวมช่วงเวลาของทุกวันในชุด: แสดงครบทุกช่วง แต่ช่วงจะ "ว่าง" (กดได้) ก็ต่อเมื่อว่างครบทุกวัน
+// ถ้าไม่ว่างในวันใดวันหนึ่ง = เทา (กดไม่ได้) — จับคู่ด้วย slot.start
+function mergePackageSlots(slotArrays) {
   if (!slotArrays.length) return [];
-  let common = slotArrays[0];
+  const base = slotArrays[0].map(s => ({ start: s.start, end: s.end, available: !!s.available }));
   for (let i = 1; i < slotArrays.length; i++) {
-    const startsSet = new Set(slotArrays[i].map(s => s.start));
-    common = common.filter(s => startsSet.has(s.start));
+    const map = new Map(slotArrays[i].map(s => [s.start, !!s.available]));
+    base.forEach(s => { s.available = s.available && map.get(s.start) === true; });
   }
-  return common;
+  return base;
 }
 
-function renderPackageSlots(commonSlots) {
+function renderPackageSlots(slots) {
   $('#slotDateLabel').textContent = `หากนัดพร้อมกันหลายวันจะต้องเลือกช่วงเวลาเดียวกัน (${state.packageDates.length} วัน)`;
   const container = $('#slotsContainer');
   const suggestContainer = $('#suggestContainer');
@@ -1337,14 +1342,19 @@ function renderPackageSlots(commonSlots) {
 
   const grid = document.createElement('div');
   grid.className = 'slots-grid';
-  commonSlots.forEach(slot => {
+  slots.forEach(slot => {
     const b = document.createElement('div');
-    b.className = 'slot-btn';
+    b.className = slot.available ? 'slot-btn' : 'slot-btn disabled';
     b.textContent = slot.start + '-' + slot.end;
-    b.addEventListener('click', () => selectPackageSlot(b, slot));
+    if (slot.available) b.addEventListener('click', () => selectPackageSlot(b, slot));
     grid.appendChild(b);
   });
   container.appendChild(grid);
+
+  // ถ้าไม่มีช่วงไหนว่างตรงกันทุกวันเลย (ปุ่มเทาหมด) ให้ขึ้นโน้ตแนะนำ
+  if (!slots.some(s => s.available)) {
+    suggestContainer.innerHTML = '<div class="empty-msg">ไม่มีช่วงเวลาที่ว่างตรงกันทุกวันที่เลือก กรุณาลดจำนวนวันหรือจองทีละวันแทน</div>';
+  }
 }
 
 function selectPackageSlot(btnEl, slot) {
