@@ -146,6 +146,25 @@
   .slot-btn:hover { border-color: var(--pink-gold); }
   .slot-btn.disabled { background: #F0F0F0; color: #BBB; cursor: not-allowed; }
   .slot-btn.disabled:hover { border-color: var(--border); }
+
+  /* แถบวันที่ใกล้เคียง (เลื่อนแนวนอน) */
+  .date-strip { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  .date-strip-track { display: flex; gap: 8px; overflow-x: auto; scroll-behavior: smooth; flex: 1; padding: 2px 0; scrollbar-width: thin; }
+  .date-strip-track::-webkit-scrollbar { height: 5px; }
+  .date-strip-track::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+  .date-chip {
+    flex: 0 0 auto; padding: 8px 14px; border: 1.5px solid var(--border); border-radius: 12px;
+    background: #FAFAFA; color: var(--dark-gray); cursor: pointer; font-size: 13px; font-weight: 500;
+    white-space: nowrap; text-align: center; transition: .2s;
+  }
+  .date-chip:hover { border-color: var(--pink-gold); }
+  .date-chip.active { border-color: var(--pink-gold); background: var(--champagne-tint); color: var(--pink-gold-deep); font-weight: 600; cursor: default; }
+  .date-strip-arrow {
+    flex: 0 0 auto; width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--border);
+    background: #fff; color: var(--dark-gray); cursor: pointer; font-size: 15px; line-height: 1;
+    display: flex; align-items: center; justify-content: center; padding: 0;
+  }
+  .date-strip-arrow:hover { border-color: var(--pink-gold); background: #fff; transform: none; box-shadow: none; }
   .slot-btn.selected {
     border-color: var(--pink-gold);
     background: var(--champagne-tint);
@@ -463,6 +482,7 @@
     <!-- STEP 2: SLOT PICKER -->
     <div class="section hidden" id="step2">
       <div class="step-title">เลือกช่วงเวลา - <span id="slotDateLabel"></span></div>
+      <div id="dateStrip" class="date-strip hidden"></div>
       <div id="slotsContainer"></div>
       <div id="suggestContainer"></div>
     </div>
@@ -658,7 +678,18 @@ function createDatePicker(ids, opts) {
     calView = new Date(_t.getFullYear(), _t.getMonth(), 1);
   }
 
-  return { reset };
+  // ตั้งค่าวันที่ให้ตรงกับที่เลือกจากที่อื่น (เช่น แถบวันที่ใกล้เคียง) โดยไม่ยิง event change
+  function setDate(iso) {
+    inputEl.value = iso;
+    calSelected = iso;
+    selectBtn.disabled = false;
+    displayEl.textContent = formatDateTH(iso);
+    displayEl.classList.remove('placeholder');
+    const [yy, mm] = iso.split('-').map(Number);
+    calView = new Date(yy, mm - 1, 1);
+  }
+
+  return { reset, setDate };
 }
 
 const dateInput = $('#dateInput');
@@ -1228,6 +1259,7 @@ $('#btnCheck').addEventListener('click', async () => {
     const data = await callWebhook({ action: 'get_availability', date, executives: execArray() });
     renderSlots(data);
     renderConfirmSummary();
+    renderDateStrip(date);
     stepEls[2].classList.remove('hidden');
     stepEls[3].classList.remove('hidden');
     // เลื่อนหน้าลงไปที่ส่วนเลือกเวลาให้อัตโนมัติ ผู้ใช้ไม่ต้อง scroll เอง
@@ -1241,6 +1273,91 @@ $('#btnCheck').addEventListener('click', async () => {
     btn.textContent = 'ค้นหาเวลาว่าง';
   }
 });
+
+// ===== แถบวันที่ใกล้เคียง (เฉพาะจองเดี่ยว) — เลื่อนดู/กดกระโดดไปวันอื่นได้เร็ว =====
+const THAI_DOW_SHORT = ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'];
+const THAI_MONTH_SHORT = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+function shortDateTH(iso) {
+  const d = new Date(iso + 'T00:00:00+07:00');
+  return `${THAI_DOW_SHORT[d.getDay()]} ${d.getDate()} ${THAI_MONTH_SHORT[d.getMonth()]}`;
+}
+
+// รายการวันที่รับนัด (จันทร์-พุธ) รอบๆ วันที่เลือก: ก่อนหน้า beforeN + วันที่เลือก + ถัดไป afterN (ตัดวันในอดีตออก)
+function bookableDatesAround(activeIso, beforeN, afterN) {
+  const isBookable = (dt) => [1, 2, 3].includes(dt.getDay());
+  const toIso = (dt) => `${dt.getFullYear()}-${pad2(dt.getMonth() + 1)}-${pad2(dt.getDate())}`;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const active = new Date(activeIso + 'T00:00:00');
+
+  const before = [];
+  let cur = new Date(active);
+  while (before.length < beforeN) {
+    cur.setDate(cur.getDate() - 1);
+    if (cur < today) break;
+    if (isBookable(cur)) before.unshift(toIso(cur));
+  }
+  const after = [];
+  cur = new Date(active);
+  while (after.length < afterN) {
+    cur.setDate(cur.getDate() + 1);
+    if (isBookable(cur)) after.push(toIso(cur));
+  }
+  return [...before, activeIso, ...after];
+}
+
+function renderDateStrip(activeIso) {
+  const strip = $('#dateStrip');
+  strip.classList.remove('hidden');
+  strip.innerHTML = '';
+
+  const track = document.createElement('div');
+  track.className = 'date-strip-track';
+
+  const leftArrow = document.createElement('button');
+  leftArrow.type = 'button';
+  leftArrow.className = 'date-strip-arrow';
+  leftArrow.textContent = '‹';
+  leftArrow.addEventListener('click', () => track.scrollBy({ left: -200, behavior: 'smooth' }));
+
+  const rightArrow = document.createElement('button');
+  rightArrow.type = 'button';
+  rightArrow.className = 'date-strip-arrow';
+  rightArrow.textContent = '›';
+  rightArrow.addEventListener('click', () => track.scrollBy({ left: 200, behavior: 'smooth' }));
+
+  bookableDatesAround(activeIso, 3, 14).forEach(iso => {
+    const chip = document.createElement('div');
+    chip.className = iso === activeIso ? 'date-chip active' : 'date-chip';
+    chip.textContent = shortDateTH(iso);
+    if (iso !== activeIso) chip.addEventListener('click', () => goToDate(iso));
+    track.appendChild(chip);
+  });
+
+  strip.appendChild(leftArrow);
+  strip.appendChild(track);
+  strip.appendChild(rightArrow);
+
+  // เลื่อนให้ชิปวันที่เลือกอยู่กลางแถบ (เฉพาะภายในแถบ ไม่กระทบการ scroll ของหน้า)
+  requestAnimationFrame(() => {
+    const a = track.querySelector('.date-chip.active');
+    if (a) track.scrollLeft = a.offsetLeft - track.clientWidth / 2 + a.clientWidth / 2;
+  });
+}
+
+// กดชิปวันที่ในแถบ = เปลี่ยนไปเช็คเวลาว่างของวันนั้นทันที (เหมือนเลือกวันใหม่แล้วกดค้นหา)
+async function goToDate(iso) {
+  if (iso === state.date || state.isPackage) return;
+  state.date = iso;
+  bookingDatePicker.setDate(iso);
+  try {
+    const data = await callWebhook({ action: 'get_availability', date: iso, executives: execArray() });
+    renderSlots(data);
+    renderConfirmSummary();
+    renderDateStrip(iso);
+  } catch (err) {
+    $('#slotsContainer').innerHTML = `<div class="empty-msg" style="color:var(--red);">${escapeHtml(err.message)}</div>`;
+  }
+}
 
 function renderSlots(data) {
   $('#slotDateLabel').textContent = formatDateTH(data.date);
@@ -1336,6 +1453,7 @@ function mergePackageSlots(slotArrays) {
 
 function renderPackageSlots(slots) {
   $('#slotDateLabel').textContent = `หากนัดพร้อมกันหลายวันจะต้องเลือกช่วงเวลาเดียวกัน (${state.packageDates.length} วัน)`;
+  $('#dateStrip').classList.add('hidden'); // แถบวันที่ใกล้เคียงใช้เฉพาะจองเดี่ยว
   const container = $('#slotsContainer');
   const suggestContainer = $('#suggestContainer');
   container.innerHTML = '';
@@ -1598,6 +1716,8 @@ function resetBookingForm() {
   state.selectedSlot = null;
   state.reschedule = null;
   $('#rescheduleBanner').classList.add('hidden');
+  $('#dateStrip').classList.add('hidden');
+  $('#dateStrip').innerHTML = '';
 
   $('#isPackage').checked = false;
   $('#isPackage').disabled = false;
