@@ -1440,12 +1440,13 @@ function selectSlot(btnEl, date, slot) {
   renderConfirmSummary();
 }
 
-// รวมค่าที่จะบันทึกเป็น "ชื่อ (ประเภท)" เช่น "Action Plan (โปรเจค)" — ต้องมีทั้งประเภทและชื่อ
+// ต้องเลือกประเภทก่อนถึงกรอกชื่อได้ (dropdown เป็นตัวช่วย/บังคับเลือก) แต่ค่าที่บันทึกส่งเฉพาะ "ชื่อ"
+// ไม่ใส่ "(ประเภท)" ต่อท้าย เพื่อไม่ให้ขึ้นในปฏิทิน/ชีต
 function companyValue() {
   const name = $('#company').value.trim();
   const type = $('#companyType').value;
   if (!name || !type) return '';
-  return `${name} (${type})`;
+  return name;
 }
 // ต้องเลือกประเภทก่อน ถึงจะพิมพ์ชื่อได้ (ล็อกช่องชื่อไว้จนกว่าจะเลือก)
 $('#companyType').addEventListener('change', () => {
