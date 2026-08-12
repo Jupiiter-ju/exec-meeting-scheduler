@@ -1450,7 +1450,7 @@ function companyValue() {
 // ต้องเลือกประเภทก่อน ถึงจะพิมพ์ชื่อได้ (ล็อกช่องชื่อไว้จนกว่าจะเลือก)
 $('#companyType').addEventListener('change', () => {
   const t = $('#companyType').value;
-  const ph = { 'บริษัท': 'เช่น BIF', 'ทีม': 'เช่น Bifrost', 'โปรเจค': 'เช่น Action Plan' };
+  const ph = { 'บริษัท': 'เช่น BIF', 'ทีม': 'เช่น Marketing', 'โปรเจค': 'เช่น Action Plan' };
   $('#company').disabled = !t;
   if (!t) { $('#company').value = ''; $('#company').placeholder = 'เลือกประเภทก่อน'; }
   else { $('#company').placeholder = ph[t] || ''; }
