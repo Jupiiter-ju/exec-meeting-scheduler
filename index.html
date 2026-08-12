@@ -403,7 +403,14 @@
       <input type="text" id="participants" placeholder="เช่น แพทตี้, พี่กุ้ง (ภาษาไทยเท่านั้น)">
 
       <label>ชื่อบริษัท / ทีม / โปรเจค</label>
-      <input type="text" id="company" placeholder="เช่น BIF, Bifrost, Action Plan, Project">
+      <div style="display:flex;gap:10px;">
+        <select id="companyType" style="flex:0 0 auto;width:auto;">
+          <option value="บริษัท">บริษัท</option>
+          <option value="ทีม">ทีม</option>
+          <option value="โปรเจค">โปรเจค</option>
+        </select>
+        <input type="text" id="company" placeholder="เช่น BIF" style="flex:1;">
+      </div>
 
       <label>ผู้บริหารที่ต้องการนัด *</label>
       <div class="exec-options">
@@ -1153,7 +1160,15 @@ function startReschedule(ev, dateIso, identity) {
   $('#topic').value = parsed.topic;
   $('#participants').value = parsed.participants;
   participantsAutoSynced = false;
-  $('#company').value = parsed.company;
+  // แยก "ชื่อ (ประเภท)" กลับเป็น dropdown + ช่องชื่อ กันข้อมูลซ้ำเวลาเลื่อนนัด
+  const cm = (parsed.company || '').match(/\((บริษัท|ทีม|โปรเจค)\)\s*$/);
+  if (cm) {
+    $('#companyType').value = cm[1];
+    $('#company').value = parsed.company.slice(0, cm.index).trim();
+  } else {
+    $('#companyType').value = 'บริษัท';
+    $('#company').value = parsed.company;
+  }
   document.querySelectorAll('.exec-chip').forEach(c => c.classList.remove('selected'));
   state.executives = null;
   resetCalendar();
@@ -1419,6 +1434,19 @@ function selectSlot(btnEl, date, slot) {
   renderConfirmSummary();
 }
 
+// รวมค่าที่จะบันทึกเป็น "ชื่อ (ประเภท)" เช่น "Action Plan (โปรเจค)"
+function companyValue() {
+  const name = $('#company').value.trim();
+  if (!name) return '';
+  const type = $('#companyType').value || 'บริษัท';
+  return `${name} (${type})`;
+}
+// เปลี่ยน placeholder ตามประเภทที่เลือก
+$('#companyType').addEventListener('change', () => {
+  const ph = { 'บริษัท': 'เช่น BIF', 'ทีม': 'เช่น Bifrost', 'โปรเจค': 'เช่น Action Plan' };
+  $('#company').placeholder = ph[$('#companyType').value] || '';
+});
+
 function renderConfirmSummary() {
   const execArr = execArray();
   const slotText = state.selectedSlot
@@ -1429,7 +1457,7 @@ function renderConfirmSummary() {
     <div><b>อีเมลผู้ขอนัด:</b> ${escapeHtml($('#callerEmail').value.trim()) || '<span style="color:var(--muted);">ไม่ระบุ — จะไม่มีการส่งคำเชิญ</span>'}</div>
     <div><b>หัวข้อ:</b> ${escapeHtml($('#topic').value.trim())}</div>
     <div><b>ผู้เข้าร่วม:</b> ${escapeHtml($('#participants').value.trim()) || '-'}</div>
-    <div><b>บริษัท/โปรเจค:</b> ${escapeHtml($('#company').value.trim()) || '-'}</div>
+    <div><b>บริษัท/โปรเจค:</b> ${escapeHtml(companyValue()) || '-'}</div>
     <div><b>ผู้บริหาร:</b> ${execLabel(execArr)}</div>
     <div><b>วันที่:</b> ${formatDateTH(state.date)}</div>
     <div><b>เวลา:</b> ${slotText}</div>
@@ -1503,7 +1531,7 @@ function renderPackageConfirmSummary() {
     <div><b>อีเมลผู้ขอนัด:</b> ${escapeHtml($('#callerEmail').value.trim()) || '<span style="color:var(--muted);">ไม่ระบุ — จะไม่มีการส่งคำเชิญ</span>'}</div>
     <div><b>หัวข้อ:</b> ${escapeHtml($('#topic').value.trim())}</div>
     <div><b>ผู้เข้าร่วม:</b> ${escapeHtml($('#participants').value.trim()) || '-'}</div>
-    <div><b>บริษัท/โปรเจค:</b> ${escapeHtml($('#company').value.trim()) || '-'}</div>
+    <div><b>บริษัท/โปรเจค:</b> ${escapeHtml(companyValue()) || '-'}</div>
     <div><b>ผู้บริหาร:</b> ${execLabel(execArr)}</div>
     <div><b>เวลา:</b> ${slotText}</div>
     <div style="margin-top:20px;"><b>จำนวนวันที่จะจอง:</b> ${dates.length} วัน</div>
@@ -1540,7 +1568,7 @@ async function confirmPackageBooking() {
     requesterEmail: $('#callerEmail').value.trim(),
     topic: $('#topic').value.trim(),
     participants: $('#participants').value.trim(),
-    company: $('#company').value.trim()
+    company: companyValue()
   };
 
   try {
@@ -1638,7 +1666,7 @@ $('#btnConfirm').addEventListener('click', async () => {
     requesterEmail: $('#callerEmail').value.trim(),
     topic: $('#topic').value.trim(),
     participants: $('#participants').value.trim(),
-    company: $('#company').value.trim()
+    company: companyValue()
   };
 
   try {
@@ -1708,6 +1736,8 @@ function resetBookingForm() {
   $('#topic').value = '';
   $('#participants').value = '';
   $('#company').value = '';
+  $('#companyType').value = 'บริษัท';
+  $('#company').placeholder = 'เช่น BIF';
   participantsAutoSynced = true;
   resetCalendar();
   document.querySelectorAll('.exec-chip').forEach(c => c.classList.remove('selected'));
