@@ -896,7 +896,18 @@ function stripNonThai(str, extraAllowedChars) {
   return str.replace(re, '');
 }
 function enforceThaiInput(el, extraAllowedChars) {
-  el.addEventListener('input', () => {
+  // คีย์บอร์ดมือถือ (เช่น Gboard ภาษาไทย) พิมพ์ผ่านกลไก composition เพื่อประกอบสระ/วรรณยุกต์
+  // ถ้าไปเขียนทับ el.value ระหว่าง composition ยังไม่จบ เบราว์เซอร์มือถือจะตัด composition ทิ้ง
+  // ทำให้พิมพ์ต่อไม่ติด จึงต้องข้ามการกรองไว้ก่อนจนกว่า compositionend
+  let composing = false;
+  el.addEventListener('compositionstart', () => { composing = true; });
+  el.addEventListener('compositionend', () => {
+    composing = false;
+    const filtered = stripNonThai(el.value, extraAllowedChars);
+    if (filtered !== el.value) el.value = filtered;
+  });
+  el.addEventListener('input', (e) => {
+    if (composing || e.isComposing) return;
     const filtered = stripNonThai(el.value, extraAllowedChars);
     if (filtered !== el.value) el.value = filtered;
   });
