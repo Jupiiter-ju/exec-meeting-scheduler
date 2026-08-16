@@ -235,10 +235,8 @@
     box-shadow: 0 6px 14px -6px rgba(255,151,183,.55);
   }
   .cal-select-btn {
-    display: block; margin: 10px auto 0; width: auto; min-width: 110px;
-    padding: 8px 28px; border-radius: 999px; font-size: 14px;
+    display: none; /* เลือกวันที่ยืนยันทันทีที่คลิก ไม่ต้องกดปุ่มนี้ซ้ำแล้ว */
   }
-  .cal-select-btn:disabled { border-radius: 999px; }
 
   .hidden { display: none !important; }
   .spinner {
@@ -612,11 +610,7 @@ function createDatePicker(ids, opts) {
         if (nextIso >= todayIso && !(restrictWeekdays && ![1, 2].includes(nextDow))) {
           el.classList.add('next-clickable');
           if (nextIso === calSelected) el.classList.add('selected');
-          el.addEventListener('click', () => {
-            calSelected = nextIso;
-            selectBtn.disabled = false;
-            render();
-          });
+          el.addEventListener('click', () => confirmDate(nextIso));
         }
       } else {
         el.textContent = dayOffset;
@@ -628,11 +622,7 @@ function createDatePicker(ids, opts) {
         } else {
           if (iso === calSelected) el.classList.add('selected');
           else if (iso === todayIso) el.classList.add('today');
-          el.addEventListener('click', () => {
-            calSelected = iso;
-            selectBtn.disabled = false;
-            render();
-          });
+          el.addEventListener('click', () => confirmDate(iso));
         }
       }
       gridEl.appendChild(el);
@@ -648,7 +638,6 @@ function createDatePicker(ids, opts) {
         calSelected = inputEl.value;
         const [yy, mm] = inputEl.value.split('-').map(Number);
         calView = new Date(yy, mm - 1, 1);
-        selectBtn.disabled = false;
       }
       render();
       popEl.classList.remove('hidden');
@@ -657,14 +646,16 @@ function createDatePicker(ids, opts) {
     }
   });
 
-  selectBtn.addEventListener('click', () => {
-    if (!calSelected) return;
-    inputEl.value = calSelected;
-    displayEl.textContent = formatDateTH(calSelected);
+  // คลิกวันในปฏิทิน = เลือกและยืนยันทันที ปิด popup เลย ไม่ต้องกดปุ่ม "เลือก" ซ้ำ
+  // ถ้าอยากเปลี่ยนวัน ให้เปิดปฏิทินแล้วคลิกวันใหม่ได้เลยเช่นกัน
+  function confirmDate(iso) {
+    calSelected = iso;
+    inputEl.value = iso;
+    displayEl.textContent = formatDateTH(iso);
     displayEl.classList.remove('placeholder');
     popEl.classList.add('hidden');
     inputEl.dispatchEvent(new Event('change'));
-  });
+  }
 
   // คลิกที่อื่นนอกช่องวันที่/ปฏิทิน = ปิด popup อัตโนมัติ
   // ใช้ composedPath เพราะคลิกวันในปฏิทินจะ re-render ตาราง ทำให้ e.target หลุดจาก DOM
@@ -678,7 +669,6 @@ function createDatePicker(ids, opts) {
   function reset() {
     inputEl.value = '';
     calSelected = null;
-    selectBtn.disabled = true;
     displayEl.textContent = placeholderText;
     displayEl.classList.add('placeholder');
     popEl.classList.add('hidden');
@@ -689,7 +679,6 @@ function createDatePicker(ids, opts) {
   function setDate(iso) {
     inputEl.value = iso;
     calSelected = iso;
-    selectBtn.disabled = false;
     displayEl.textContent = formatDateTH(iso);
     displayEl.classList.remove('placeholder');
     const [yy, mm] = iso.split('-').map(Number);
