@@ -1084,7 +1084,7 @@ function renderMeetings(matches, identity) {
         rowStatusEl.textContent = '';
         rowStatusEl.className = 'status';
         try {
-          const res = await callWebhook({ action: 'cancel', source: 'website', date: dateIso, topic: ev.summary || '', callerName: identity.callerName, requesterEmail: identity.callerEmail });
+          const res = await callWebhook({ action: 'cancel', source: 'website', date: dateIso, time: (ev.start || '').length >= 16 ? (ev.start || '').slice(11, 16) : '', topic: ev.summary || '', callerName: identity.callerName, requesterEmail: identity.callerEmail });
           if (res && res.success === false) throw new Error(res.error || 'ยกเลิกไม่สำเร็จ');
           row.innerHTML = '<div class="empty-msg" style="color:var(--green);">✅ ยกเลิกนัดหมายนี้เรียบร้อยแล้ว</div>';
         } catch (err) {
@@ -1150,7 +1150,7 @@ function parseEventDescription(desc) {
 }
 
 function startReschedule(ev, dateIso, identity) {
-  state.reschedule = { date: dateIso, summary: ev.summary || '', callerName: identity.callerName, callerEmail: identity.callerEmail, batchId: parseBatchId(ev.description) };
+  state.reschedule = { date: dateIso, time: (ev.start || '').length >= 16 ? (ev.start || '').slice(11, 16) : '', summary: ev.summary || '', callerName: identity.callerName, callerEmail: identity.callerEmail, batchId: parseBatchId(ev.description) };
   showBookingCard();
   showStep(1);
   hideResults();
@@ -1610,6 +1610,7 @@ async function confirmPackageBooking() {
               action: 'cancel',
               source: 'website',
               date: state.reschedule.date,
+              time: state.reschedule.time,
               topic: state.reschedule.summary,
               callerName: state.reschedule.callerName,
               requesterEmail: state.reschedule.callerEmail
@@ -1712,6 +1713,7 @@ $('#btnConfirm').addEventListener('click', async () => {
           action: 'cancel',
           source: 'website',
           date: state.reschedule.date,
+          time: state.reschedule.time,
           topic: state.reschedule.summary,
           callerName: state.reschedule.callerName,
           requesterEmail: state.reschedule.callerEmail
