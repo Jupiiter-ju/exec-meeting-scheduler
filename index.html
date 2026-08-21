@@ -1121,8 +1121,16 @@ function renderMeetings(matches, identity) {
             // (ต้องใส่ที่ #mStep2Status ไม่ใช่ #searchStatus เพราะ #searchStatus อยู่ใน #mStep1
             // ซึ่งถูกซ่อนไปแล้วหลัง render ผลค้นหา — ใส่ผิดที่จะไม่มีใครเห็นข้อความนี้เลย)
             await performMeetingSearch(identity.callerName, identity.callerEmail);
-            $('#mStep2Status').textContent = res.message || `ยกเลิกนัดหมายทั้งชุดเรียบร้อยแล้ว (${res.deletedCount || ''} รายการ)`;
-            $('#mStep2Status').className = 'status success';
+            // ถ้า backend ส่งรายการวันที่ที่ยกเลิกมาด้วย (deletedDates) โชว์เป็นรายวันเหมือนหน้าสรุปจองแบบชุด
+            // ถ้ายังไม่มี (backend เก่า) ใช้ข้อความสรุปบรรทัดเดียวเหมือนเดิมเป็น fallback
+            const deletedDates = Array.isArray(res.deletedDates) ? res.deletedDates : [];
+            const doneStatusEl = $('#mStep2Status');
+            if (deletedDates.length) {
+              doneStatusEl.innerHTML = `<div>✅ ยกเลิกนัดหมายทั้งชุดเรียบร้อยแล้ว (${deletedDates.length} รายการ):</div><div style="font-size:13px;margin-top:6px;">${deletedDates.map(d => renderDateRow(d, { prefix: '✅' })).join('')}</div>`;
+            } else {
+              doneStatusEl.textContent = res.message || `ยกเลิกนัดหมายทั้งชุดเรียบร้อยแล้ว (${res.deletedCount || ''} รายการ)`;
+            }
+            doneStatusEl.className = 'status success';
           } catch (err) {
             rowStatusEl.textContent = err.message;
             rowStatusEl.className = 'status error';
