@@ -1118,10 +1118,11 @@ function renderMeetings(matches, identity) {
           try {
             const res = await callWebhook({ action: 'cancel_batch', batchId, callerName: identity.callerName, requesterEmail: identity.callerEmail });
             if (res && res.success === false) throw new Error(res.error || 'ยกเลิกทั้งชุดไม่สำเร็จ');
-            // นี่คือหน้ายืนยันผลการยกเลิก ไม่ใช่หน้าค้นหา — เคลียร์รายการเดิมทิ้งแทนการค้นหาซ้ำ
-            // (ค้นหาซ้ำแล้ว render รายการว่างเปล่าจะโชว์ข้อความ "ไม่พบนัดหมาย" ซึ่งดูเหมือนระบบพัง
-            // ทั้งที่จริงคือยกเลิกสำเร็จแล้ว ไม่มีอะไรเหลือให้เจอ)
-            $('#meetingsList').innerHTML = '';
+            // นัดหมายอื่นของผู้ใช้ (เดี่ยวหรือชุดอื่น) ที่ไม่เกี่ยวกับชุดนี้อาจยังเหลืออยู่ ต้องค้นหาใหม่
+            // เพื่อให้ยังเห็นรายการนั้นต่อ (เหมือนตอนยกเลิกนัดเดี่ยว) แล้วค่อยใส่ข้อความสำเร็จทีหลัง
+            // (ใส่ที่ #mStep2Status หลังค้นหาเสร็จ เพราะ renderMeetings ที่เรียกจาก performMeetingSearch
+            // จะเคลียร์ #mStep2Status ทิ้งทุกครั้งที่เริ่มค้นหาใหม่ — ใส่ก่อนหน้านั้นจะโดนเคลียร์ทิ้ง)
+            await performMeetingSearch(identity.callerName, identity.callerEmail);
             const doneStatusEl = $('#mStep2Status');
             const msg = res.message || `ยกเลิกนัดหมายทั้งชุด (${res.deletedCount || ''} รายการ) เรียบร้อยแล้ว`;
             doneStatusEl.innerHTML = `<div class="cancel-batch-headline">✅ ${escapeHtml(msg)}</div>`;
