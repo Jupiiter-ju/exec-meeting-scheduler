@@ -473,8 +473,8 @@
 
         <label>ทำซ้ำในวัน *</label>
         <div class="day-options">
-          <div class="day-chip selected" data-day="1">จันทร์</div>
-          <div class="day-chip selected" data-day="2">อังคาร</div>
+          <div class="day-chip" data-day="1">จันทร์</div>
+          <div class="day-chip" data-day="2">อังคาร</div>
         </div>
 
         <div id="packagePreview" style="font-size:12px;color:var(--muted);margin-top:6px;"></div>
@@ -1771,7 +1771,7 @@ function resetBookingForm() {
   $('#packageDateSection').classList.add('hidden');
   packageStartPicker.reset();
   packageEndPicker.reset();
-  document.querySelectorAll('.day-chip').forEach(c => c.classList.add('selected'));
+  document.querySelectorAll('.day-chip').forEach(c => c.classList.remove('selected'));
   $('#packagePreview').textContent = '';
 
   showStep(1);
