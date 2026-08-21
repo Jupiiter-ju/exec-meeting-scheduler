@@ -1122,16 +1122,9 @@ function renderMeetings(matches, identity) {
             // (ค้นหาซ้ำแล้ว render รายการว่างเปล่าจะโชว์ข้อความ "ไม่พบนัดหมาย" ซึ่งดูเหมือนระบบพัง
             // ทั้งที่จริงคือยกเลิกสำเร็จแล้ว ไม่มีอะไรเหลือให้เจอ)
             $('#meetingsList').innerHTML = '';
-            // ถ้า backend ส่งรายการวันที่ที่ยกเลิกมาด้วย (deletedDates) โชว์เป็นรายวันเหมือนหน้าสรุปจองแบบชุด
-            // ถ้ายังไม่มี (backend เก่า) ใช้ข้อความสรุปบรรทัดเดียวเหมือนเดิมเป็น fallback
-            const deletedDates = Array.isArray(res.deletedDates) ? res.deletedDates : [];
             const doneStatusEl = $('#mStep2Status');
-            if (deletedDates.length) {
-              doneStatusEl.innerHTML = `<div class="cancel-batch-headline">✅ ยกเลิกนัดหมายทั้งชุด (${deletedDates.length} รายการ) เรียบร้อยแล้ว</div><div style="font-size:13px;margin-top:10px;">${deletedDates.map(d => renderDateRow(d, { prefix: '✅' })).join('')}</div>`;
-            } else {
-              const msg = res.message || `ยกเลิกนัดหมายทั้งชุด (${res.deletedCount || ''} รายการ) เรียบร้อยแล้ว`;
-              doneStatusEl.innerHTML = `<div class="cancel-batch-headline">✅ ${escapeHtml(msg)}</div>`;
-            }
+            const msg = res.message || `ยกเลิกนัดหมายทั้งชุด (${res.deletedCount || ''} รายการ) เรียบร้อยแล้ว`;
+            doneStatusEl.innerHTML = `<div class="cancel-batch-headline">✅ ${escapeHtml(msg)}</div>`;
             doneStatusEl.className = 'status success';
           } catch (err) {
             rowStatusEl.textContent = err.message;
