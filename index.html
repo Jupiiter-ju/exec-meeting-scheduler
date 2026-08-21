@@ -185,6 +185,7 @@
   .status { font-size: 13px; margin-top: 10px; }
   .status.error { color: var(--red); }
   .status.success { color: var(--green); }
+  .cancel-batch-headline { text-align: center; font-size: 18px; font-weight: 700; }
   .summary-list { font-size: 14px; line-height: 1.8; color: var(--dark-gray); }
   .summary-list b { color: var(--pink-gold-deep); font-weight: 600; }
   .confirm-card { text-align: center; padding: 32px 20px; }
@@ -1117,18 +1118,19 @@ function renderMeetings(matches, identity) {
           try {
             const res = await callWebhook({ action: 'cancel_batch', batchId, callerName: identity.callerName, requesterEmail: identity.callerEmail });
             if (res && res.success === false) throw new Error(res.error || 'ยกเลิกทั้งชุดไม่สำเร็จ');
-            // นัดอื่นในชุดเดียวกันอาจถูกลบไปด้วย รีเฟรชผลค้นหาใหม่ทั้งหมดก่อน แล้วค่อยใส่ข้อความสำเร็จทีหลัง
-            // (ต้องใส่ที่ #mStep2Status ไม่ใช่ #searchStatus เพราะ #searchStatus อยู่ใน #mStep1
-            // ซึ่งถูกซ่อนไปแล้วหลัง render ผลค้นหา — ใส่ผิดที่จะไม่มีใครเห็นข้อความนี้เลย)
-            await performMeetingSearch(identity.callerName, identity.callerEmail);
+            // นี่คือหน้ายืนยันผลการยกเลิก ไม่ใช่หน้าค้นหา — เคลียร์รายการเดิมทิ้งแทนการค้นหาซ้ำ
+            // (ค้นหาซ้ำแล้ว render รายการว่างเปล่าจะโชว์ข้อความ "ไม่พบนัดหมาย" ซึ่งดูเหมือนระบบพัง
+            // ทั้งที่จริงคือยกเลิกสำเร็จแล้ว ไม่มีอะไรเหลือให้เจอ)
+            $('#meetingsList').innerHTML = '';
             // ถ้า backend ส่งรายการวันที่ที่ยกเลิกมาด้วย (deletedDates) โชว์เป็นรายวันเหมือนหน้าสรุปจองแบบชุด
             // ถ้ายังไม่มี (backend เก่า) ใช้ข้อความสรุปบรรทัดเดียวเหมือนเดิมเป็น fallback
             const deletedDates = Array.isArray(res.deletedDates) ? res.deletedDates : [];
             const doneStatusEl = $('#mStep2Status');
             if (deletedDates.length) {
-              doneStatusEl.innerHTML = `<div>✅ ยกเลิกนัดหมายทั้งชุดเรียบร้อยแล้ว (${deletedDates.length} รายการ):</div><div style="font-size:13px;margin-top:6px;">${deletedDates.map(d => renderDateRow(d, { prefix: '✅' })).join('')}</div>`;
+              doneStatusEl.innerHTML = `<div class="cancel-batch-headline">✅ ยกเลิกนัดหมายทั้งชุด (${deletedDates.length} รายการ) เรียบร้อยแล้ว</div><div style="font-size:13px;margin-top:10px;">${deletedDates.map(d => renderDateRow(d, { prefix: '✅' })).join('')}</div>`;
             } else {
-              doneStatusEl.textContent = res.message || `ยกเลิกนัดหมายทั้งชุดเรียบร้อยแล้ว (${res.deletedCount || ''} รายการ)`;
+              const msg = res.message || `ยกเลิกนัดหมายทั้งชุด (${res.deletedCount || ''} รายการ) เรียบร้อยแล้ว`;
+              doneStatusEl.innerHTML = `<div class="cancel-batch-headline">✅ ${escapeHtml(msg)}</div>`;
             }
             doneStatusEl.className = 'status success';
           } catch (err) {
