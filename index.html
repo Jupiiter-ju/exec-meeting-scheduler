@@ -1153,15 +1153,22 @@ function parseEventDescription(desc) {
   const topicMatch = desc.match(/หัวข้อ:\s*(.+)/);
   const participantsMatch = desc.match(/ผู้เข้าร่วม:\s*(.+)/);
   const companyMatch = desc.match(/บริษัท\/โปรเจค:\s*(.+)/);
+  // อีเมลผู้ขอนัดฝังอยู่ในบรรทัด "ผู้ขอนัด: ชื่อ (อีเมล)" — มีเฉพาะตอนที่ตอนจองระบุอีเมลไว้เท่านั้น
+  const emailMatch = desc.match(/ผู้ขอนัด:.*\(([^()]+@[^()]+)\)/);
   return {
     topic: topicMatch ? topicMatch[1].trim() : '',
     participants: participantsMatch ? participantsMatch[1].trim() : '',
-    company: companyMatch ? companyMatch[1].trim() : ''
+    company: companyMatch ? companyMatch[1].trim() : '',
+    email: emailMatch ? emailMatch[1].trim() : ''
   };
 }
 
 function startReschedule(ev, dateIso, identity) {
-  state.reschedule = { date: dateIso, time: (ev.start || '').length >= 16 ? (ev.start || '').slice(11, 16) : '', summary: ev.summary || '', callerName: identity.callerName, callerEmail: identity.callerEmail, batchId: parseBatchId(ev.description) };
+  // อีเมลของนัดเดิมต้องดึงจากรายละเอียดนัดหมายจริง (parsed.email) ไม่ใช่อีเมลที่พิมพ์ไว้ตอนค้นหา
+  // (identity.callerEmail มักว่างเปล่าเพราะช่องค้นหาอีเมลไม่บังคับกรอก) ใช้ identity.callerEmail เป็น fallback เท่านั้น
+  const parsed = parseEventDescription(ev.description);
+  const rescheduleEmail = parsed.email || identity.callerEmail;
+  state.reschedule = { date: dateIso, time: (ev.start || '').length >= 16 ? (ev.start || '').slice(11, 16) : '', summary: ev.summary || '', callerName: identity.callerName, callerEmail: rescheduleEmail, batchId: parseBatchId(ev.description) };
   showBookingCard();
   showStep(1);
   hideResults();
@@ -1173,12 +1180,11 @@ function startReschedule(ev, dateIso, identity) {
   $('#singleDateSection').classList.remove('hidden');
   $('#packageDateSection').classList.add('hidden');
 
-  const parsed = parseEventDescription(ev.description);
-
   $('#callerName').value = identity.callerName;
   $('#callerName').readOnly = true;
-  $('#callerEmail').value = identity.callerEmail;
-  $('#callerEmail').readOnly = true;
+  // ต่างจากชื่อ (ล็อกไว้เพื่อยืนยันตัวตน) — อีเมลต้องแก้ไข/เพิ่มเองได้เสมอ ไม่ล็อก
+  $('#callerEmail').value = rescheduleEmail;
+  $('#callerEmail').readOnly = false;
   $('#topic').value = parsed.topic;
   $('#participants').value = parsed.participants;
   participantsAutoSynced = false;
@@ -1673,6 +1679,7 @@ function renderPackageDone(data, payload, oldCancelWarning) {
     <div style="font-size:13px;margin-top:6px;">${bookedList}</div>
     ${failedList}
     ${holidayList}
+    <div style="margin-top:20px;color:var(--muted);font-size:13px;">${payload.requesterEmail ? `ระบบส่งคำเชิญยืนยันไปที่ ${escapeHtml(payload.requesterEmail)} แล้ว เช็คอีเมลเพื่อกดตอบรับ` : 'ไม่ได้ระบุอีเมล จึงไม่มีการส่งคำเชิญ'}</div>
     ${state.reschedule && !oldCancelWarning ? `<div style="margin-top:20px;color:var(--muted);font-size:13px;">นัดหมายเดิม (${escapeHtml(state.reschedule.summary)}) ถูกยกเลิกให้เรียบร้อยแล้ว</div>` : ''}
     ${oldCancelWarning ? `<div style="margin-top:20px;color:var(--red);font-size:13px;">${oldCancelWarning}</div>` : ''}
   `;
