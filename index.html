@@ -967,10 +967,18 @@ $('#btnSearchAgain').addEventListener('click', () => {
   $('#searchStatus').className = 'status';
 });
 
+// ค้นหานัดหมาย + render รายการ ล้วนๆ ไม่ยุ่งกับ #searchStatus — แยกออกมาให้เรียกซ้ำได้
+// (เช่น หลังยกเลิกทั้งชุดสำเร็จ ต้องรีเฟรชรายการ แต่ต้องไม่ไปเคลียร์ข้อความ "ยกเลิกสำเร็จ" ทิ้ง)
+async function performMeetingSearch(callerName, callerEmail) {
+  const date = $('#mDateInput').value;
+  const data = await callWebhook({ action: 'find_meeting', date, callerName, requesterEmail: callerEmail });
+  if (data && data.success === false) throw new Error(data.error || 'ค้นหานัดหมายไม่สำเร็จ');
+  renderMeetings(data.matches || [], { callerName, callerEmail });
+}
+
 $('#btnSearch').addEventListener('click', async () => {
   const callerName = $('#mCallerName').value.trim();
   const callerEmail = $('#mCallerEmail').value.trim();
-  const date = $('#mDateInput').value;
   const statusEl = $('#searchStatus');
   statusEl.textContent = '';
   statusEl.className = 'status';
@@ -984,9 +992,7 @@ $('#btnSearch').addEventListener('click', async () => {
   btn.innerHTML = 'กำลังค้นหา...<span class="spinner"></span>';
 
   try {
-    const data = await callWebhook({ action: 'find_meeting', date, callerName, requesterEmail: callerEmail });
-    if (data && data.success === false) throw new Error(data.error || 'ค้นหานัดหมายไม่สำเร็จ');
-    renderMeetings(data.matches || [], { callerName, callerEmail });
+    await performMeetingSearch(callerName, callerEmail);
   } catch (err) {
     statusEl.textContent = err.message;
     statusEl.className = 'status error';
@@ -1107,10 +1113,12 @@ function renderMeetings(matches, identity) {
           try {
             const res = await callWebhook({ action: 'cancel_batch', batchId, callerName: identity.callerName, requesterEmail: identity.callerEmail });
             if (res && res.success === false) throw new Error(res.error || 'ยกเลิกทั้งชุดไม่สำเร็จ');
+            // นัดอื่นในชุดเดียวกันอาจถูกลบไปด้วย รีเฟรชผลค้นหาใหม่ทั้งหมดก่อน
+            // แล้วค่อยใส่ข้อความสำเร็จทีหลัง (performMeetingSearch ไม่ยุ่งกับ #searchStatus เอง
+            // ต่างจาก $('#btnSearch').click() เดิมที่จะไปเคลียร์ข้อความนี้ทิ้งทันทีที่กด)
+            await performMeetingSearch(identity.callerName, identity.callerEmail);
             $('#searchStatus').textContent = res.message || `ยกเลิกนัดหมายทั้งชุดเรียบร้อยแล้ว (${res.deletedCount || ''} รายการ)`;
             $('#searchStatus').className = 'status success';
-            // นัดอื่นในชุดเดียวกันอาจถูกลบไปด้วย รีเฟรชผลค้นหาใหม่ทั้งหมด
-            $('#btnSearch').click();
           } catch (err) {
             rowStatusEl.textContent = err.message;
             rowStatusEl.className = 'status error';
