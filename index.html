@@ -368,6 +368,7 @@
 
     <div class="section hidden" id="mStep2">
       <div class="step-title">นัดหมายที่พบ</div>
+      <div class="status" id="mStep2Status"></div>
       <div id="meetingsList"></div>
       <button class="secondary" id="btnSearchAgain">ค้นหาใหม่</button>
     </div>
@@ -1012,6 +1013,9 @@ function parseBatchId(desc) {
 function renderMeetings(matches, identity) {
   $('#mStep1').classList.add('hidden');
   $('#mStep2').classList.remove('hidden');
+  // เคลียร์ข้อความสถานะเก่า (เช่น "ยกเลิกทั้งชุดสำเร็จ" จากรอบก่อน) ทุกครั้งที่ค้นหาใหม่
+  $('#mStep2Status').textContent = '';
+  $('#mStep2Status').className = 'status';
   const list = $('#meetingsList');
   list.innerHTML = '';
 
@@ -1113,12 +1117,12 @@ function renderMeetings(matches, identity) {
           try {
             const res = await callWebhook({ action: 'cancel_batch', batchId, callerName: identity.callerName, requesterEmail: identity.callerEmail });
             if (res && res.success === false) throw new Error(res.error || 'ยกเลิกทั้งชุดไม่สำเร็จ');
-            // นัดอื่นในชุดเดียวกันอาจถูกลบไปด้วย รีเฟรชผลค้นหาใหม่ทั้งหมดก่อน
-            // แล้วค่อยใส่ข้อความสำเร็จทีหลัง (performMeetingSearch ไม่ยุ่งกับ #searchStatus เอง
-            // ต่างจาก $('#btnSearch').click() เดิมที่จะไปเคลียร์ข้อความนี้ทิ้งทันทีที่กด)
+            // นัดอื่นในชุดเดียวกันอาจถูกลบไปด้วย รีเฟรชผลค้นหาใหม่ทั้งหมดก่อน แล้วค่อยใส่ข้อความสำเร็จทีหลัง
+            // (ต้องใส่ที่ #mStep2Status ไม่ใช่ #searchStatus เพราะ #searchStatus อยู่ใน #mStep1
+            // ซึ่งถูกซ่อนไปแล้วหลัง render ผลค้นหา — ใส่ผิดที่จะไม่มีใครเห็นข้อความนี้เลย)
             await performMeetingSearch(identity.callerName, identity.callerEmail);
-            $('#searchStatus').textContent = res.message || `ยกเลิกนัดหมายทั้งชุดเรียบร้อยแล้ว (${res.deletedCount || ''} รายการ)`;
-            $('#searchStatus').className = 'status success';
+            $('#mStep2Status').textContent = res.message || `ยกเลิกนัดหมายทั้งชุดเรียบร้อยแล้ว (${res.deletedCount || ''} รายการ)`;
+            $('#mStep2Status').className = 'status success';
           } catch (err) {
             rowStatusEl.textContent = err.message;
             rowStatusEl.className = 'status error';
