@@ -1,1 +1,18 @@
 n8n-*.json
+
+# n8n workflow exports (contain employee emails / Discord IDs)
+/*.json
+
+# Scratch files for n8n node edits
+fix_*.txt
+diff_*.txt
+
+# Diagrams, slides, reports, render output
+/*.png
+/report.html
+/loadtest-slide-options.html
+/presentation/
+/_render/
+
+# Local Claude Code settings
+/.claude/
