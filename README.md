@@ -6,6 +6,7 @@
 
 - `index.html` — หน้าเว็บฟอร์มสำหรับพนักงาน (เปิดใช้ได้ทันที ไม่ต้อง build)
 - `n8n-exec-meeting-workflow.json` — n8n workflow ที่ import ใช้งานได้เลย (ต้องตั้งค่าตามด้านล่างก่อน)
+- `apps-script/` — ระบบแจ้งเตือนนัดหมายล่วงหน้า 1 ชม. ทาง Discord DM (Google Apps Script แทน n8n ตั้งแต่ ต.ค. 2569) — วิธีติดตั้งอยู่ใน [apps-script/README.md](apps-script/README.md)
 
 ## กติกาที่ระบบใช้
 
