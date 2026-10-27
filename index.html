@@ -1430,26 +1430,15 @@ function renderSlots(data) {
     container.innerHTML = '<div class="empty-msg">วันนี้ไม่มีเวลาว่างแล้ว</div>';
   }
 
-  // ถ้าวันนั้นไม่มีช่วงว่างเลย ให้แนะนำวันใกล้เคียงที่ว่างเพิ่มด้านล่าง (ปุ่มเทาด้านบนยังแสดงอยู่)
+  // ถ้าวันนั้นไม่มีช่วงว่างเลย แจ้งข้อความให้เลือกวันอื่นเอง (ปุ่มเทาด้านบนยังแสดงอยู่)
+  // ไม่เสนอ nextAvailable จาก backend แล้ว — ผู้ใช้ตัดสินใจเลือกวันใหม่จากแถบวันที่/ปฏิทินเอง (ตามที่ตกลง 2026-10-27)
   if (!hasAvailable) {
-    if (data.nextAvailable) {
-      const box = document.createElement('div');
-      box.className = 'suggest-box';
-      box.innerHTML = `<b>วันที่ใกล้เคียงที่ว่าง:</b> ${formatDateTH(data.nextAvailable.date)}`;
-      const grid = document.createElement('div');
-      grid.className = 'slots-grid';
-      data.nextAvailable.slots.forEach(slot => {
-        const b = document.createElement('div');
-        b.className = 'slot-btn';
-        b.textContent = slot.start + '-' + slot.end;
-        b.addEventListener('click', () => selectSlot(b, data.nextAvailable.date, slot));
-        grid.appendChild(b);
-      });
-      box.appendChild(grid);
-      suggestContainer.appendChild(box);
-    } else {
-      suggestContainer.innerHTML = '<div class="empty-msg">ไม่พบเวลาว่างในอีก 21 วันข้างหน้า กรุณาติดต่อเจ้าหน้าที่โดยตรง</div>';
-    }
+    const box = document.createElement('div');
+    box.className = 'suggest-box';
+    box.innerHTML = data.isHoliday
+      ? '<b>วันที่เลือกเป็นวันหยุดบริษัท</b> ไม่สามารถนัดหมายได้ กรุณาเลือกวันอื่นแทน'
+      : '<b>วันที่เลือกไม่มีช่วงเวลาว่างแล้ว</b> กรุณาเลือกวันอื่นแทน';
+    suggestContainer.appendChild(box);
   }
 }
 
