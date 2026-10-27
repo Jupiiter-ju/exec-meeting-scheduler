@@ -16,6 +16,3 @@ diff_*.txt
 
 # Local Claude Code settings
 /.claude/
-
-# Apps Script: local copies of Script Property values (Discord IDs)
-/apps-script/*.local.*
